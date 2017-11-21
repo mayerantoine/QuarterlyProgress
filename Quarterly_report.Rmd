@@ -1,0 +1,42 @@
+---
+title: "Quarterly_report"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(knitr.table.format = "html") 
+
+```
+
+```{r  warning = FALSE , message=FALSE}
+library(knitr)
+library(kableExtra)
+
+source("Partner_Analysis.R")
+
+```
+
+
+
+## Ou Level results
+
+```{r ou_level, warning=FALSE, results='asis', message=FALSE}
+
+ou_level %>%
+    kable("html")%>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F )
+
+```
+
+## Partner Performance
+
+```{r partner_p, warning= FALSE, message = FALSE}
+
+partner_performance_sp %>%
+    kable("html") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F )
+
+
+```
+

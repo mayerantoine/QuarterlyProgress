@@ -1,7 +1,7 @@
 library(tidyverse)
 library(formattable)
 library(knitr)
-library(xtable)
+
 
 rm(list = ls())
 
@@ -13,12 +13,15 @@ names(site_im) <- tolower(names(site_im))
 old_mechanism <- c("FOSREF","PIH","CDS","TBD2","Catholic Medical Mission Board","University of Maryland","Health Service Delivery","GHESKIO 0545","POZ","GHESKIO 541","ITECH 1331","University of Miami","Dedup","ITECH 549")
 
 
-key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","KP_PREV","PMTCT_ART","PMTCT_EID","PMTCT_STAT",
-                    "PMTCT_STAT_POS","TB_ART","TB_STAT","TB_STAT_POS","PMTCT_EID_POS","PMTCT_EID_Less_Equal_Two_Months",
-                    "PMTCT_EID_Two_Twelve_Months","PMTCT_STAT_KnownatEntry_POSITIVE",
-                    "PMTCT_STAT_NewlyIdentified_POSITIVE")
+key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","PMTCT_ART","PMTCT_EID","PMTCT_STAT",
+                    "PMTCT_STAT_POS","TB_ART","TB_STAT","TB_STAT_POS","PMTCT_EID_POS")
 
-key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","PMTCT_FO","OVC_SERV_UNDER_18","OVC_HIVSTAT","TX_RET")
+#key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","KP_PREV","PMTCT_ART","PMTCT_EID","PMTCT_STAT",
+#                    "PMTCT_STAT_POS","TB_ART","TB_STAT","TB_STAT_POS","PMTCT_EID_POS","PMTCT_EID_Less_Equal_Two_Months",
+#                    "PMTCT_EID_Two_Twelve_Months","PMTCT_STAT_KnownatEntry_POSITIVE",
+#                    "PMTCT_STAT_NewlyIdentified_POSITIVE")
+
+key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET")
 
 
 #################### OU Level Results ########################################
@@ -92,7 +95,7 @@ tx_net_new <- data_frame (indicator = c("TX_NET_NEW"),
 
 # OU Level Results bind non-cummul , cummul and tx_net_new
 ou_level <- rbind(ou_level_non_cummul,ou_level_cumul,tx_net_new)
-ou_level
+#ou_level
 
 
 
@@ -179,4 +182,19 @@ partner_performance <- rbind(partner_performance_key,partner_performance_cum,tx_
 partner_performance_sp <- partner_performance %>%
     spread(implementingmechanismname,round(fy2017Perf,1))
 
-partner_performance_sp
+#partner_performance_sp
+
+partner_performance %>%
+    filter(indicator %in% c("HTS_TST_POS")) %>%
+    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
+        geom_bar(stat = "identity")+
+        coord_flip()
+
+partner_performance %>%
+    filter(indicator %in% c("TX_NET_NEW")) %>%
+    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
+    geom_bar(stat = "identity")+
+    coord_flip()
+ 
+        
+
