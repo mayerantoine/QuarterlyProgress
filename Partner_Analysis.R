@@ -42,12 +42,12 @@ partner_data <- site_im %>%
     filter(indicator %in% key_indicators) %>%
     filter(disaggregate == "Total Numerator") %>%
     filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
     filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,fundingagency,psnu,facility,indicator,fy2016apr,fy2017q1,
+    select(implementingmechanismname,fundingagency,psnu,facility,community,indicator,fy2015apr,fy2016apr,fy2017q1,
            fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
-    group_by(implementingmechanismname,fundingagency,psnu,facility,indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+    group_by(implementingmechanismname,fundingagency,psnu,facility,community,indicator) %>%
+    summarise(fy2015apr = sum(fy2015apr, na.rm = T),
+              fy2016apr = sum(fy2016apr,na.rm = T),
               fy2017q1 = sum(fy2017q1, na.rm = T),
               fy2017q2 = sum(fy2017q2, na.rm = T),
               fy2017q3 = sum(fy2017q3,na.rm = T),
@@ -60,15 +60,14 @@ partner_data <- site_im %>%
 partner_data_cum <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_cummulative_indicator) %>%
-    filter(!(implementingmechanismname %in% old_mechanism)) %>%
     filter(disaggregate == "Total Numerator") %>%
     filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
     filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,fundingagency,psnu,facility,indicator,fy2016apr,fy2017q1,
+    select(implementingmechanismname,fundingagency,psnu,facility,community,indicator,fy2015apr,fy2016apr,fy2017q1,
            fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
-    group_by(implementingmechanismname,fundingagency,psnu,facility,indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+    group_by(implementingmechanismname,fundingagency,psnu,community,facility,indicator) %>%
+    summarise(fy2015apr = sum(fy2015apr, na.rm = T),
+              fy2016apr = sum(fy2016apr,na.rm = T),
               fy2017q1 = sum(fy2017q1, na.rm = T),
               fy2017q2 = sum(fy2017q2, na.rm = T),
               fy2017q3 = sum(fy2017q3,na.rm = T),
@@ -78,20 +77,26 @@ partner_data_cum <- site_im %>%
 
 partner_data_final <- rbind(partner_data,partner_data_cum) %>% as.data.frame()
 
+## We need to assgin new mechanism name to fy2016, fy2015 data, because mechanism
+## has changed in 2017 for CDC Haiti, this is useful to have yearly trend for a specific partner
+site_by_mechanism_2017 <- partner_data_final %>%
+    filter(indicator == "HTS_TST") %>%
+    filter(!(implementingmechanismname %in% old_mechanism)) %>%
+    group_by(implementingmechanismname,facility) %>%
+    summarise(fy2017Cum = sum(fy2017Cum)) %>%
+    select(implementingmechanismname,facility) %>% as.data.frame()
 
-#################### OU Level Results ########################################
+site_by_mechanism_2017 <- site_by_mechanism_2017[!is.na(site_by_mechanism_2017$facility),]
 
-# OU Level Results for non-cummalative indicators
-ou_level_non_cummul <- partner_data_final %>%
-                #filter(snu1 != "_Military Haiti") %>%
-                #filter(indicator %in% key_indicators) %>%
-                #filter(disaggregate == "Total Numerator") %>%
-                #filter(indicatortype == "DSD") %>% 
-                #filter(typefacility == "Y") %>%
-                #filter(numeratordenom == "N") %>%
-                select(indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017Cum,fy2017_targets) %>%
+
+#################### OU Level Results ##############################################################
+
+# OU Level Results for non-cummalative and cummul indicators
+ou_level_data <- partner_data_final %>%
+                select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017Cum,fy2017_targets) %>%
                 group_by(indicator) %>%
-                summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+                summarise(fy2015apr = sum(fy2015apr, na.rm = T),
+                          fy2016apr = sum(fy2016apr,na.rm = T),
                           fy2017q1 = sum(fy2017q1, na.rm = T),
                           fy2017q2 = sum(fy2017q2, na.rm = T),
                           fy2017q3 = sum(fy2017q3,na.rm = T),
@@ -101,36 +106,14 @@ ou_level_non_cummul <- partner_data_final %>%
                 mutate(fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0))
 
 
-# OU Level Results for cummulative/annual/semi-annual indicators
-ou_level_cumul <- site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
-    filter(indicator %in% key_cummulative_indicator) %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
-    filter(numeratordenom == "N") %>%
-    select(indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
-    group_by(indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
-              fy2017q1 = sum(fy2017q1, na.rm = T),
-              fy2017q2 = sum(fy2017q2, na.rm = T),
-              fy2017q3 = sum(fy2017q3,na.rm = T),
-              fy2017q4 = sum(fy2017q4,na.rm = T),
-              fy2017_targets= sum(fy2017_targets, na.rm = T)) %>%
-    mutate(fy2017Cum  = ifelse(fy2017q4 == 0, fy2017q3,fy2017q4),
-           fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0))
 
 # summarise tx_curr to calculate tx_net_new
-tx_curr <- site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
+tx_curr <- partner_data_final %>%
     filter(indicator=="TX_CURR") %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
-    filter(numeratordenom == "N") %>%
-    select(indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
     group_by(indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+    summarise(fy2015apr = sum(fy2015apr, na.rm = T),
+              fy2016apr = sum(fy2016apr,na.rm = T),
               fy2017q1 = sum(fy2017q1, na.rm = T),
               fy2017q2 = sum(fy2017q2, na.rm = T),
               fy2017q3 = sum(fy2017q3,na.rm = T),
@@ -139,7 +122,8 @@ tx_curr <- site_im %>%
 
 # calculate net_new by quarter
 tx_net_new <- data_frame (indicator = c("TX_NET_NEW"),
-                            fy2016apr = c(0),
+                            fy2015apr = c(0),
+                            fy2016apr = c(tx_curr$fy2016apr - tx_curr$fy2015apr),
                             fy2017q1 = c(tx_curr$fy2017q1 - tx_curr$fy2016apr),
                             fy2017q2 = c(tx_curr$fy2017q2 - tx_curr$fy2017q1),
                             fy2017q3 = c(tx_curr$fy2017q3 - tx_curr$fy2017q2),
@@ -150,7 +134,7 @@ tx_net_new <- data_frame (indicator = c("TX_NET_NEW"),
 
 
 # OU Level Results bind non-cummul , cummul and tx_net_new
-ou_level <- rbind(ou_level_non_cummul,ou_level_cumul,tx_net_new)
+ou_level <- rbind(ou_level_data,tx_net_new)
 #ou_level
 
 
@@ -158,79 +142,32 @@ ou_level <- rbind(ou_level_non_cummul,ou_level_cumul,tx_net_new)
 ################## Partner Performance Results #############################################
 
 
-# Partner Performance for cummulative indicators
+# Partner Performance: Results vs Targets = Performance
 
-partner_performance_cum <- site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
-    filter(indicator %in% key_cummulative_indicator) %>%
+partner_performance <- partner_data_final %>%
     filter(!(implementingmechanismname %in% old_mechanism)) %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
-    filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+     select(implementingmechanismname,indicator,fy2017Cum,fy2017_targets) %>%
     group_by(implementingmechanismname,indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
-              fy2017q1 = sum(fy2017q1, na.rm = T),
-              fy2017q2 = sum(fy2017q2, na.rm = T),
-              fy2017q3 = sum(fy2017q3,na.rm = T),
-              fy2017q4 = sum(fy2017q4,na.rm = T),
+    summarise(fy2017Cum = sum(fy2017Cum, na.rm = T),
               fy2017_targets= sum(fy2017_targets, na.rm = T)) %>%
-    mutate(fy2017Cum  = ifelse(fy2017q4 == 0, fy2017q3,fy2017q4),
-           fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0)) %>%
-     select(implementingmechanismname,indicator,fy2017Perf) %>%
+    mutate( fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,0), 0)) %>%
     as.data.frame()
 
 
-# Partner Performance for key indicators
- partner_performance_key <- site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
-    filter(indicator %in% key_indicators) %>%
-    filter(!(implementingmechanismname %in% old_mechanism)) %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
-    filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
-    group_by(implementingmechanismname,indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
-              fy2017q1 = sum(fy2017q1, na.rm = T),
-              fy2017q2 = sum(fy2017q2, na.rm = T),
-              fy2017q3 = sum(fy2017q3,na.rm = T),
-              fy2017q4 = sum(fy2017q4,na.rm = T),
-              fy2017_targets= sum(fy2017_targets, na.rm = T)) %>%
-    mutate(fy2017Cum  = fy2017q1+fy2017q2+fy2017q3+fy2017q4,
-           fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0)) %>% 
-    select(implementingmechanismname,indicator,fy2017Perf) %>%
-    as.data.frame()
 
 # summarise tx_curr by partner to calculate tx_net_new
-tx_curr_partner <- site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
+tx_curr_partner <- partner_data_final %>%
     filter(indicator=="TX_CURR") %>%
-    filter(!(implementingmechanismname %in% old_mechanism)) %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(typefacility == "Y") %>%
-    filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,indicator,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    select(implementingmechanismname,indicator,fy2016apr,fy2017Cum,fy2017_targets) %>%
     group_by(implementingmechanismname,indicator) %>%
-    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
-              fy2017q1 = sum(fy2017q1, na.rm = T),
-              fy2017q2 = sum(fy2017q2, na.rm = T),
-              fy2017q3 = sum(fy2017q3,na.rm = T),
-              fy2017q4 = sum(fy2017q4,na.rm = T),
+    summarise(fy2016apr = sum(fy2016apr, na.rm = T),
+              fy2017Cum = sum(fy2017Cum,na.rm = T),
               fy2017_targets = sum(fy2017_targets,na.rm = T))
 
 ## Calculate net_new  ?? note net_new target to be fix because partners names have changed
 tx_net_new_partner <- data_frame(implementingmechanismname = tx_curr_partner$implementingmechanismname,
                                  indicator = c("TX_NET_NEW"),
-                                 fy2016apr = c(0),
-                                 fy2017q1 = c(tx_curr_partner$fy2017q1 - tx_curr_partner$fy2016apr),
-                                 fy2017q2 = c(tx_curr_partner$fy2017q2 - tx_curr_partner$fy2017q1),
-                                 fy2017q3 = c(tx_curr_partner$fy2017q3 - tx_curr_partner$fy2017q2),
-                                 fy2017q4 = c(tx_curr_partner$fy2017q4 - tx_curr_partner$fy2017q3),
-                                 fy2017Cum = c(fy2017q1+fy2017q2+fy2017q3+fy2017q4),
+                                 fy2017Cum = c(tx_curr_partner$fy2017Cum - tx_curr_partner$fy2016apr),
                                  fy2017_targets = c(tx_curr_partner$fy2017_targets - tx_curr_partner$fy2016apr),
                                  fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0))
 
@@ -238,12 +175,14 @@ tx_net_new_partner <- tx_net_new_partner %>%
                         select(implementingmechanismname,indicator,fy2017Perf) %>%
                         as.data.frame()
 
-partner_performance <- rbind(partner_performance_key,partner_performance_cum,tx_net_new_partner)
+#partner_performance <- rbind(partner_performance_key,partner_performance_cum,tx_net_new_partner)
 
 partner_performance_sp <- partner_performance %>%
-    spread(implementingmechanismname,round(fy2017Perf,1))
-names(partner_performance_sp) <- c("Indicator","CDS 1528","FOSREF 1925","GHESKIO 1969","Linkages",
-                                   "PIH 1926","SSQH Nord","BEST","CMMB 1970","GHESKIO 1924",
+        select(implementingmechanismname,indicator,fy2017Perf) %>%
+        spread(implementingmechanismname,round(fy2017Perf,1))
+
+names(partner_performance_sp) <- c("Indicator","BEST","CDS 1528","FOSREF 1925","GHESKIO 1969","Linkages",
+                                   "PIH 1926","SSQH Nord","CMMB 1970","GHESKIO 1924",
                                    "HTW","MSPP","SSQH Sud")
 #partner_performance_sp
 
