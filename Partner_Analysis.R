@@ -77,6 +77,23 @@ partner_data_cum <- site_im %>%
 
 partner_data_final <- rbind(partner_data,partner_data_cum) %>% as.data.frame()
 
+## shorten the name of the mechanism for better display this only apply for Haiti
+partner_data_final$mechanism <- NA
+partner_data_final$mechanism <- partner_data_final$implementingmechanismname
+partner_data_final[partner_data_final$implementingmechanismname ==
+                       "Catholic Medical Mission Board",]$mechanism <- "CMMB"
+partner_data_final[partner_data_final$implementingmechanismname == 
+                    "BEST (Byen en ak Sante Timoun)",]$mechanism <- "BEST"
+partner_data_final[partner_data_final$implementingmechanismname == 
+                       "SSQH Nord (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH Nord"
+partner_data_final[partner_data_final$implementingmechanismname == 
+                       "SSQH Centre/Sud (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH Sud"
+partner_data_final[partner_data_final$implementingmechanismname == 
+                       "HTW (Health Through Walls)",]$mechanism  <- "HTW"
+partner_data_final[partner_data_final$implementingmechanismname == 
+                       "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism  <- "MSPP/UGP"
+
+
 ## We need to assgin new mechanism name to fy2016, fy2015 data, because mechanism
 ## has changed in 2017 for CDC Haiti, this is useful to have yearly trend for a specific partner
 site_by_mechanism_2017 <- partner_data_final %>%
@@ -139,15 +156,14 @@ ou_level <- rbind(ou_level_data,tx_net_new)
 
 
 
-################## Partner Performance Results #############################################
+################## Partner Performance Results ##########################################################
 
 
 # Partner Performance: Results vs Targets = Performance
-
 partner_performance <- partner_data_final %>%
     filter(!(implementingmechanismname %in% old_mechanism)) %>%
-     select(implementingmechanismname,indicator,fy2017Cum,fy2017_targets) %>%
-    group_by(implementingmechanismname,indicator) %>%
+     select(mechanism,indicator,fy2017Cum,fy2017_targets) %>%
+    group_by(mechanism,indicator) %>%
     summarise(fy2017Cum = sum(fy2017Cum, na.rm = T),
               fy2017_targets= sum(fy2017_targets, na.rm = T)) %>%
     mutate( fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,0), 0)) %>%
@@ -158,43 +174,97 @@ partner_performance <- partner_data_final %>%
 # summarise tx_curr by partner to calculate tx_net_new
 tx_curr_partner <- partner_data_final %>%
     filter(indicator=="TX_CURR") %>%
-    select(implementingmechanismname,indicator,fy2016apr,fy2017Cum,fy2017_targets) %>%
-    group_by(implementingmechanismname,indicator) %>%
+    select(mechanism,indicator,fy2016apr,fy2017Cum,fy2017_targets) %>%
+    group_by(mechanism,indicator) %>%
     summarise(fy2016apr = sum(fy2016apr, na.rm = T),
               fy2017Cum = sum(fy2017Cum,na.rm = T),
               fy2017_targets = sum(fy2017_targets,na.rm = T))
 
 ## Calculate net_new  ?? note net_new target to be fix because partners names have changed
-tx_net_new_partner <- data_frame(implementingmechanismname = tx_curr_partner$implementingmechanismname,
+tx_net_new_partner <- data_frame(mechanism = tx_curr_partner$mechanism,
                                  indicator = c("TX_NET_NEW"),
                                  fy2017Cum = c(tx_curr_partner$fy2017Cum - tx_curr_partner$fy2016apr),
                                  fy2017_targets = c(tx_curr_partner$fy2017_targets - tx_curr_partner$fy2016apr),
                                  fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,1), 0))
 
 tx_net_new_partner <- tx_net_new_partner %>% 
-                        select(implementingmechanismname,indicator,fy2017Perf) %>%
+                        select(mechanism,indicator,fy2017Perf) %>%
                         as.data.frame()
 
 #partner_performance <- rbind(partner_performance_key,partner_performance_cum,tx_net_new_partner)
 
 partner_performance_sp <- partner_performance %>%
-        select(implementingmechanismname,indicator,fy2017Perf) %>%
-        spread(implementingmechanismname,round(fy2017Perf,1))
+        select(mechanism,indicator,fy2017Perf) %>%
+        spread(mechanism,round(fy2017Perf,1))
 
-names(partner_performance_sp) <- c("Indicator","BEST","CDS 1528","FOSREF 1925","GHESKIO 1969","Linkages",
-                                   "PIH 1926","SSQH Nord","CMMB 1970","GHESKIO 1924",
-                                   "HTW","MSPP","SSQH Sud")
-#partner_performance_sp
+########################################################################################################
+## Generate Visuals from Partner Performance Data
+
+fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
+               "FOSREF 1925"="#CAB2D6","GHESKIO 1924"="#FF7F00","GHESKIO 1969"="#999966","HTW"="#E31A1C",
+               "Linkages"="#006666","MSPP/UGP"="#1F78B4","PIH 1926"="#33A02C","SSQH Nord"="#B2DF8A","SSQH Sud"="#A6CEE3")
+
+partner_performance %>%
+    filter(indicator == "TX_NEW") %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill= mechanism))+
+    geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
+              position=position_stack(vjust=0.5), colour="white") +
+    labs(y="", 
+         x="",
+         fill="",
+         title=paste0("TX_NEW"," ", "Performance"),
+         subtitle="",
+         caption="Source: DATIM FactView")+
+    coord_flip()+
+    scale_fill_manual(values = fill_pall,guide = FALSE)+
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16))  
+
+partner_performance %>%
+    filter(indicator == "TX_NEW") %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill=mechanism))+
+    geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
+              position=position_stack(vjust=0.5), colour="white") +
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets))+
+    labs(y="", 
+         x="",
+         fill="",
+         title=paste0("TX_NEW"," ", "Results vs Targets"),
+         subtitle="",
+         caption="Source: FactView SiteXIM")+
+    coord_flip()+
+    scale_fill_manual(values = fill_pall)+
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16))  
+
 
 
 cascade_indicator <- unique(partner_performance$indicator)
 
 
-for (i in seq_along(cascade_indicator)) {
+generatePerformancePlot <- function(cascade_indicator,partner_performance) {
+    
+fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
+                   "FOSREF 1925"="#CAB2D6","GHESKIO 1924"="#FF7F00","GHESKIO 1969"="#999966",
+               "HTW"="#E31A1C","Linkages"="#006666","MSPP/UGP"="#1F78B4","PIH 1926"="#33A02C",
+               "SSQH Nord"="#B2DF8A","SSQH Sud"="#A6CEE3")
+    
+    
+   for (i in seq_along(cascade_indicator)) {
     
 plot1 <- partner_performance %>%
     filter(indicator == cascade_indicator[i]) %>%
-    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill = mechanism))+
     geom_bar(stat = "identity")+
     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
               position=position_stack(vjust=0.5), colour="white") +
@@ -202,20 +272,20 @@ plot1 <- partner_performance %>%
              x="",
              fill="",
              title=paste0(cascade_indicator[i]," ", "Performance"),
-             subtitle="",
-             caption="Source: FactView SiteXIM")+
+             subtitle="Implementing Mechanism ranks by % achievements ",
+             caption="Source: DATIM FactView")+
     coord_flip()+
+    scale_fill_manual(values = fill_pall)+
     theme(axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
-          legend.position = "bottom")  
+          plot.title = element_text(size = 16))  
 
  plot2 <- partner_performance %>%
     filter(indicator == cascade_indicator[i]) %>%
-    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Cum),y=fy2017Cum))+
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill= mechanism))+
     geom_bar(stat = "identity")+
     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
               position=position_stack(vjust=0.5), colour="white") +
@@ -224,31 +294,44 @@ plot1 <- partner_performance %>%
          x="",
          fill="",
          title=paste0(cascade_indicator[i]," ", "Results vs Targets"),
-         subtitle="",
-         caption="Source: FactView SiteXIM")+
+         subtitle="Implementing Mechanism rank by result",
+         caption="Source: DATIM FactView")+
     coord_flip()+
+     scale_fill_manual(values = fill_pall)+
     theme(axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
-          legend.position = "bottom")  
- 
+          plot.title = element_text(size = 16))  
+
+dir.create(file.path("Figs/achievements"),showWarnings = FALSE)
+dir.create(file.path("Figs/results"),showWarnings = FALSE)
  
  # save plots as .png
- ggsave(plot1, filename =paste("performance",cascade_indicator[i], ".png", sep=''), path = "Figs/", scale=2)
- ggsave(plot2, filename =paste("results",cascade_indicator[i], ".png", sep=''), path = "Figs/", scale=2)
+ ggsave(plot1, filename =paste("performance",cascade_indicator[i], ".png", sep=''), path = "Figs/achievements/", scale=2)
+ ggsave(plot2, filename =paste("results",cascade_indicator[i], ".png", sep=''), path = "Figs/results/", scale=2)
  
+ 
+ ## remove ticks
+ ## place x axis up
+ ## align y-axis label left
+ ## Remove BEST
+ ## Review font weight , and titles
  
 ## print(plot1)
 ## print(plot2)
+    }
 }
 
-## overall TX_CURR trend
-## Add colot in previous charts
+
+generatePerformancePlot(cascade_indicator,partner_performance)
+
+
 ## Bubble charts x = Target,y =Performance, size = Results, color = Partner
+## net new by partner
 ## TX_new trend by partner ~ facet
+## overall TX_CURR trend
 ## Why MSPP and PIH are low performer ? why they did not reach their target ?
     ## which sites are holding them back ?
     ## what district are they working in ?
