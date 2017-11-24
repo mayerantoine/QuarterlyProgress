@@ -3,7 +3,7 @@
 # APR17                                                                         # 
 # Mayer  Antoine                                                                # 
 # Purpose : Import FactView Site by IM data and create visual for Partner       # 
-#           Performance Moniting                                                #
+#           Performance Monitoring                                               #
 # Date : 11/22/2017                                                             #
 #                                                                               #
 #                                                                               #
@@ -186,17 +186,82 @@ names(partner_performance_sp) <- c("Indicator","BEST","CDS 1528","FOSREF 1925","
                                    "HTW","MSPP","SSQH Sud")
 #partner_performance_sp
 
-partner_performance %>%
-    filter(indicator %in% c("HTS_TST_POS")) %>%
-    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
-        geom_bar(stat = "identity")+
-        coord_flip()
 
-partner_performance %>%
-    filter(indicator %in% c("TX_NET_NEW")) %>%
+cascade_indicator <- unique(partner_performance$indicator)
+
+
+for (i in seq_along(cascade_indicator)) {
+    
+plot1 <- partner_performance %>%
+    filter(indicator == cascade_indicator[i]) %>%
     ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
     geom_bar(stat = "identity")+
-    coord_flip()
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
+              position=position_stack(vjust=0.5), colour="white") +
+    labs(y="", 
+             x="",
+             fill="",
+             title=paste0(cascade_indicator[i]," ", "Performance"),
+             subtitle="",
+             caption="Source: FactView SiteXIM")+
+    coord_flip()+
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16),
+          legend.position = "bottom")  
+
+ plot2 <- partner_performance %>%
+    filter(indicator == cascade_indicator[i]) %>%
+    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Cum),y=fy2017Cum))+
+    geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
+              position=position_stack(vjust=0.5), colour="white") +
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets))+
+    labs(y="", 
+         x="",
+         fill="",
+         title=paste0(cascade_indicator[i]," ", "Results vs Targets"),
+         subtitle="",
+         caption="Source: FactView SiteXIM")+
+    coord_flip()+
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16),
+          legend.position = "bottom")  
  
+ 
+ # save plots as .png
+ ggsave(plot1, filename =paste("performance",cascade_indicator[i], ".png", sep=''), path = "Figs/", scale=2)
+ ggsave(plot2, filename =paste("results",cascade_indicator[i], ".png", sep=''), path = "Figs/", scale=2)
+ 
+ 
+## print(plot1)
+## print(plot2)
+}
+
+## overall TX_CURR trend
+## Add colot in previous charts
+## Bubble charts x = Target,y =Performance, size = Results, color = Partner
+## TX_new trend by partner ~ facet
+## Why MSPP and PIH are low performer ? why they did not reach their target ?
+    ## which sites are holding them back ?
+    ## what district are they working in ?
+    ## can you use maps ??
+
+
+
+
+
+ 
+
+
+
+
 
 
