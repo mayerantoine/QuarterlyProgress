@@ -18,7 +18,7 @@ library(knitr)
 
 rm(list = ls())
 
-############ IMPORT STE By IM Factview ################################
+################# IMPORT STE By IM Factview ########################################
 
 site_im <- read_tsv("data/ICPI_FactView_Site_IM_Haiti_20171115_v1_1.txt")
 names(site_im) <- tolower(names(site_im))
@@ -34,7 +34,7 @@ key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","PMTCT_ART","PMTCT_EID","PM
 #                    "PMTCT_EID_Two_Twelve_Months","PMTCT_STAT_KnownatEntry_POSITIVE",
 #                    "PMTCT_STAT_NewlyIdentified_POSITIVE")
 
-key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET")
+key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET","OVC_HIVSTAT")
 #################################################################################
 
 partner_data <- site_im %>%
@@ -106,7 +106,7 @@ site_by_mechanism_2017 <- partner_data_final %>%
 site_by_mechanism_2017 <- site_by_mechanism_2017[!is.na(site_by_mechanism_2017$facility),]
 
 
-#################### OU Level Results ##############################################################
+################# OU Level Results ##############################################################
 
 # OU Level Results for non-cummalative and cummul indicators
 ou_level_data <- partner_data_final %>%
@@ -155,8 +155,7 @@ ou_level <- rbind(ou_level_data,tx_net_new)
 #ou_level
 
 
-
-################## Partner Performance Results ##########################################################
+################# Partner Performance Results ########################################################
 
 
 # Partner Performance: Results vs Targets = Performance
@@ -197,7 +196,11 @@ partner_performance_sp <- partner_performance %>%
         select(mechanism,indicator,fy2017Perf) %>%
         spread(mechanism,round(fy2017Perf,1))
 
-########################################################################################################
+## partner_performance
+
+
+################# Generate Visuals from Partner Performance Data ##########################################
+
 ## Generate Visuals from Partner Performance Data
 
 fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
@@ -215,7 +218,7 @@ partner_performance %>%
          fill="",
          title=paste0("TX_NEW"," ", "Performance"),
          subtitle="",
-         caption="Source: DATIM FactView")+
+         caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
     scale_fill_manual(values = fill_pall,guide = FALSE)+
     theme(axis.text.x = element_text(size = 10),
@@ -237,9 +240,9 @@ partner_performance %>%
          fill="",
          title=paste0("TX_NEW"," ", "Results vs Targets"),
          subtitle="",
-         caption="Source: FactView SiteXIM")+
+         caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
-    scale_fill_manual(values = fill_pall)+
+   scale_fill_manual(values = fill_pall)+
     theme(axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10), 
           panel.background = element_blank(),
@@ -273,7 +276,7 @@ plot1 <- partner_performance %>%
              fill="",
              title=paste0(cascade_indicator[i]," ", "Performance"),
              subtitle="Implementing Mechanism ranks by % achievements ",
-             caption="Source: DATIM FactView")+
+             caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
     scale_fill_manual(values = fill_pall)+
     theme(axis.text.x = element_text(size = 10),
@@ -295,7 +298,7 @@ plot1 <- partner_performance %>%
          fill="",
          title=paste0(cascade_indicator[i]," ", "Results vs Targets"),
          subtitle="Implementing Mechanism rank by result",
-         caption="Source: DATIM FactView")+
+         caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
      scale_fill_manual(values = fill_pall)+
     theme(axis.text.x = element_text(size = 10),
@@ -316,8 +319,9 @@ dir.create(file.path("Figs/results"),showWarnings = FALSE)
  ## remove ticks
  ## place x axis up
  ## align y-axis label left
- ## Remove BEST
+ ## Remove zero results IM
  ## Review font weight , and titles
+ 
  
 ## print(plot1)
 ## print(plot2)
@@ -327,21 +331,69 @@ dir.create(file.path("Figs/results"),showWarnings = FALSE)
 
 generatePerformancePlot(cascade_indicator,partner_performance)
 
+################# Overall achievement bar ###########################################################3
 
+ou_level %>%
+    filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT"))) %>%
+    ggplot(aes(x = reorder(indicator, fy2017Perf), y = fy2017Perf)) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+
+################# Bubble Charts Partner Performance ##################################################
 ## Bubble charts x = Target,y =Performance, size = Results, color = Partner
+
+partner_performance %>%
+    filter(indicator == "TX_NEW") %>%
+    ggplot(mapping = aes(x=fy2017_targets,y=fy2017Perf,size = fy2017Cum,fill= mechanism))+
+  #  geom_jitter(aes(col=mechanism,size =fy2017Cum ))+
+    geom_jitter(shape = 21)+
+   geom_text(aes(label=mechanism,size=100),hjust = 0.6, vjust=-2.3) +
+    labs(y="APR17 % achievements", 
+         x="FY2017 Targets",
+         size = "APR17 Results",
+         fill="",
+         title=paste0("TX_NEW"," ", "Performance"),
+         subtitle="",
+         caption="Source: ICPI FactView SitexIM Haiti")+
+   scale_size_area(max_size = 22)+
+  #  scale_size(range = c(5, 20)) +
+    scale_fill_manual(values = fill_pall,guide = FALSE)+
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16),
+          legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.key.size = unit(1, "cm") )  
+
+############### Trend by Partner ##############################################################
+# Looking at the trend by IM for APR15, APR16, APR17
+
+partner_data_final %>%
+    group_by(mechanism,indicator) %>%
+    summarise(fy2015apr=sum(fy2015apr),fy2016apr=sum(fy2016apr), fy2017Cum=sum(fy2017Cum)) %>%
+    gather("fiscal_year","total",3:5) %>%
+    filter(indicator == "TX_NEW") %>%
+    ggplot(aes(fiscal_year,total))+
+        geom_point()+
+        facet_wrap(~mechanism)
+    
+
+
+
 ## net new by partner
-## TX_new trend by partner ~ facet
+## trend by partner ~ facet
 ## overall TX_CURR trend
+## overall TX_NEW trand
 ## Why MSPP and PIH are low performer ? why they did not reach their target ?
     ## which sites are holding them back ?
     ## what district are they working in ?
     ## can you use maps ??
-
-
-
-
-
- 
+## if we merge SSQH ? GHESKIO ?? Present the Profile of GHESKIO, PIH, UGP, SSQH
+## IMs Profile : District, Volume on Tx, nb Sites, achievements, trends, Barriers (YIELD , Enrollement, NET_NEW), spending,
 
 
 
