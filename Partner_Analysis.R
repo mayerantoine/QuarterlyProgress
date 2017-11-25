@@ -14,7 +14,7 @@
 library(tidyverse)
 library(formattable)
 library(knitr)
-
+library(scales)
 
 rm(list = ls())
 
@@ -154,6 +154,9 @@ tx_net_new <- data_frame (indicator = c("TX_NET_NEW"),
 ou_level <- rbind(ou_level_data,tx_net_new)
 #ou_level
 
+write_csv(ou_level,"processed_data/ou_level.csv")
+
+
 
 ################# Partner Performance Results ########################################################
 
@@ -165,7 +168,7 @@ partner_performance <- partner_data_final %>%
     group_by(mechanism,indicator) %>%
     summarise(fy2017Cum = sum(fy2017Cum, na.rm = T),
               fy2017_targets= sum(fy2017_targets, na.rm = T)) %>%
-    mutate( fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets)*100,0), 0)) %>%
+    mutate( fy2017Perf = ifelse(fy2017_targets > 0,round((fy2017Cum/fy2017_targets),2), 0)) %>%
     as.data.frame()
 
 
@@ -196,6 +199,8 @@ partner_performance_sp <- partner_performance %>%
         select(mechanism,indicator,fy2017Perf) %>%
         spread(mechanism,round(fy2017Perf,1))
 
+write_csv(partner_performance_sp,"processed_data/partner_performance_sp.csv")
+
 ## partner_performance
 
 
@@ -208,50 +213,61 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
                "Linkages"="#006666","MSPP/UGP"="#1F78B4","PIH 1926"="#33A02C","SSQH Nord"="#B2DF8A","SSQH Sud"="#A6CEE3")
 
 partner_performance %>%
+    filter(fy2017Perf > 0) %>%
     filter(indicator == "TX_NEW") %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill= mechanism))+
     geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.5,
               position=position_stack(vjust=0.5), colour="white") +
     labs(y="", 
          x="",
          fill="",
-         title=paste0("TX_NEW"," ", "Performance"),
-         subtitle="",
+         title=paste0("APR17 TX_NEW"," ", "Partner Performance"),
+         subtitle="Rank from highest to lowest % of achievement",
          caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
     scale_fill_manual(values = fill_pall,guide = FALSE)+
-    theme(axis.text.x = element_text(size = 10),
-          axis.text.y = element_text(size = 10), 
+    scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16))  
+          plot.title = element_text(size = 16),
+          axis.ticks.y = element_blank())  
 
 partner_performance %>%
-    filter(indicator == "TX_NEW") %>%
+    filter(indicator == "TX_NEW", fy2017Cum > 0) %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill=mechanism))+
     geom_bar(stat = "identity")+
     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
               position=position_stack(vjust=0.5), colour="white") +
-    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets))+
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.1, color="black")+
     labs(y="", 
          x="",
          fill="",
-         title=paste0("TX_NEW"," ", "Results vs Targets"),
-         subtitle="",
+         title=paste0("APR17 TX_NEW"," "," Partner Results vs Targets"),
+         subtitle="Rank from highest to lowest results",
          caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
-   scale_fill_manual(values = fill_pall)+
-    theme(axis.text.x = element_text(size = 10),
+   scale_fill_manual(values = fill_pall, guide = FALSE)+
+    scale_y_continuous(expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
           axis.text.y = element_text(size = 10), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16))  
+          plot.title = element_text(size = 16),
+          axis.ticks.y = element_blank())  
 
 
-
+## remove them because they have no target, no performance
+partner_performance <- partner_performance %>%
+                        filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT")))
 cascade_indicator <- unique(partner_performance$indicator)
 
 
@@ -265,48 +281,56 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
     
    for (i in seq_along(cascade_indicator)) {
     
-plot1 <- partner_performance %>%
-    filter(indicator == cascade_indicator[i]) %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill = mechanism))+
+plot1 <-partner_performance %>%
+    filter(indicator == cascade_indicator[i], fy2017Perf > 0) %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill= mechanism))+
     geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.5,
               position=position_stack(vjust=0.5), colour="white") +
-    labs(y="", 
-             x="",
-             fill="",
-             title=paste0(cascade_indicator[i]," ", "Performance"),
-             subtitle="Implementing Mechanism ranks by % achievements ",
-             caption="Source: ICPI FactView SitexIM Haiti")+
-    coord_flip()+
-    scale_fill_manual(values = fill_pall)+
-    theme(axis.text.x = element_text(size = 10),
-          axis.text.y = element_text(size = 10), 
-          panel.background = element_blank(),
-          axis.line=element_line(),
-          axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16))  
-
- plot2 <- partner_performance %>%
-    filter(indicator == cascade_indicator[i]) %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill= mechanism))+
-    geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
-              position=position_stack(vjust=0.5), colour="white") +
-    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets))+
     labs(y="", 
          x="",
          fill="",
-         title=paste0(cascade_indicator[i]," ", "Results vs Targets"),
-         subtitle="Implementing Mechanism rank by result",
+         title=paste0("APR17"," ",cascade_indicator[i]," ","Partner Performance"),
+         subtitle="Rank from highest to lowest % of achievement",
          caption="Source: ICPI FactView SitexIM Haiti")+
     coord_flip()+
-     scale_fill_manual(values = fill_pall)+
-    theme(axis.text.x = element_text(size = 10),
-          axis.text.y = element_text(size = 10), 
+    scale_fill_manual(values = fill_pall,guide = FALSE)+
+    scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16))  
+          plot.title = element_text(size = 16),
+          axis.ticks.y = element_blank())  
+
+ plot2 <- partner_performance %>%
+    filter(indicator == cascade_indicator[i], fy2017Cum > 0) %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill= mechanism))+
+    geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4.5,
+              position=position_stack(vjust=0.5), colour="white") +
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.1, color="black")+
+    labs(y="", 
+         x="",
+         fill="",
+         title=paste0("APR17"," ",cascade_indicator[i]," ", "Partner Results vs Targets"),
+         subtitle="Rank from highest to lowest result",
+         caption="Source: ICPI FactView SitexIM Haiti")+
+    coord_flip()+
+     scale_fill_manual(values = fill_pall, guide = FALSE)+
+     scale_y_continuous(expand = c(0, 0))+
+     expand_limits(x = 0, y = 0)+
+     scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16),
+          axis.ticks.y = element_blank())  
 
 dir.create(file.path("Figs/achievements"),showWarnings = FALSE)
 dir.create(file.path("Figs/results"),showWarnings = FALSE)
@@ -336,29 +360,48 @@ generatePerformancePlot(cascade_indicator,partner_performance)
 ou_level %>%
     filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT"))) %>%
     ggplot(aes(x = reorder(indicator, fy2017Perf), y = fy2017Perf)) +
-    geom_bar(stat = "identity") +
-    coord_flip()
+    geom_bar(stat = "identity",fill="#0072B2") +
+    geom_hline(yintercept = 85)+
+    geom_text(aes(x = reorder(indicator, fy2017Perf), y = fy2017Perf,
+                  label=paste0(sprintf("%.0f",round(fy2017Perf,0)),"%")),size = 4, hjust =-0.05) +
+    coord_flip()+
+    labs(y="% of achievement", 
+         x="",
+         fill="",
+         title="APR17 Overall Performance",
+         subtitle="",
+         caption="Source: ICPI FactView SitexIM Haiti")+
+    scale_y_continuous(limits=c(0,180))+
+    scale_y_continuous(labels = percent_format())+
+    guides(fill = FALSE) +
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12), 
+          panel.background = element_blank(),
+          axis.line= element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 16) )  
+
 
 
 ################# Bubble Charts Partner Performance ##################################################
 ## Bubble charts x = Target,y =Performance, size = Results, color = Partner
 
 partner_performance %>%
-    filter(indicator == "TX_NEW") %>%
-    ggplot(mapping = aes(x=fy2017_targets,y=fy2017Perf,size = fy2017Cum,fill= mechanism))+
+    filter(indicator == "HTS_TST_POS") %>%
+    ggplot(mapping = aes(x=fy2017_targets,y=round(fy2017Perf,0),size = fy2017Cum,fill= mechanism))+
   #  geom_jitter(aes(col=mechanism,size =fy2017Cum ))+
     geom_jitter(shape = 21)+
-   geom_text(aes(label=mechanism,size=100),hjust = 0.6, vjust=-2.3) +
+   geom_text(aes(label=mechanism,size=100),hjust = 0.2, vjust=-2.5) +
     labs(y="APR17 % achievements", 
          x="FY2017 Targets",
          size = "APR17 Results",
          fill="",
-         title=paste0("TX_NEW"," ", "Performance"),
+         title=paste0("HTS_TST_POS"," ", "Performance"),
          subtitle="",
          caption="Source: ICPI FactView SitexIM Haiti")+
    scale_size_area(max_size = 22)+
-  #  scale_size(range = c(5, 20)) +
     scale_fill_manual(values = fill_pall,guide = FALSE)+
+    scale_y_continuous(labels = percent_format())+
     theme(axis.text.x = element_text(size = 10),
           axis.text.y = element_text(size = 10), 
           panel.background = element_blank(),
