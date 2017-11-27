@@ -22,6 +22,7 @@ rm(list = ls())
 
 site_im <- read_tsv("data/ICPI_FactView_Site_IM_Haiti_20171115_v1_1.txt")
 names(site_im) <- tolower(names(site_im))
+caption <- c("Data source:ICPI FactView SitexIM Haiti")
 
 old_mechanism <- c("FOSREF","PIH","CDS","TBD2","Catholic Medical Mission Board","University of Maryland","Health Service Delivery","GHESKIO 0545","POZ","GHESKIO 541","ITECH 1331","University of Miami","Dedup","ITECH 549")
 
@@ -214,19 +215,18 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
 
 partner_performance %>%
     filter(fy2017Perf > 0) %>%
-    filter(indicator == "TX_NEW") %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill= mechanism))+
-    geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.5,
+    filter(indicator == "TX_CURR") %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf))+
+    geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.8,
               position=position_stack(vjust=0.5), colour="white") +
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_NEW"," ", "Partner Performance"),
+         title=paste0("APR17 TX_CURR"," ", "Partner Performance"),
          subtitle="Rank from highest to lowest % of achievement",
-         caption="Source: ICPI FactView SitexIM Haiti")+
+         caption= "Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
-    scale_fill_manual(values = fill_pall,guide = FALSE)+
     scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
     expand_limits(x = 0, y = 0)+
     scale_x_discrete(expand = c(0, 0))+
@@ -235,33 +235,34 @@ partner_performance %>%
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
+          plot.title = element_text(size = 18),
+          plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
 partner_performance %>%
-    filter(indicator == "TX_NEW", fy2017Cum > 0) %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill=mechanism))+
-    geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
+    filter(indicator == "TX_CURR", fy2017Cum > 0) %>%
+    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum))+
+    geom_bar(stat = "identity",fill= "#1F78B4", width = 0.8)+
+    geom_text(aes(label=paste0(comma(fy2017Cum))),size=4,
               position=position_stack(vjust=0.5), colour="white") +
-    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.1, color="black")+
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.5, color="#FF7F00")+
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_NEW"," "," Partner Results vs Targets"),
+         title=paste0("APR17 TX_CURR"," "," Partner Results vs Targets"),
          subtitle="Rank from highest to lowest results",
-         caption="Source: ICPI FactView SitexIM Haiti")+
+         caption="Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
-   scale_fill_manual(values = fill_pall, guide = FALSE)+
     scale_y_continuous(expand = c(0, 0))+
     expand_limits(x = 0, y = 0)+
     scale_x_discrete(expand = c(0, 0))+
     theme(axis.text.x = element_text(size = 12),
-          axis.text.y = element_text(size = 10), 
+          axis.text.y = element_text(size = 13,face= "bold"), 
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
 
@@ -281,56 +282,57 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
     
    for (i in seq_along(cascade_indicator)) {
     
-plot1 <-partner_performance %>%
-    filter(indicator == cascade_indicator[i], fy2017Perf > 0) %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf,fill= mechanism))+
-    geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.5,
-              position=position_stack(vjust=0.5), colour="white") +
-    labs(y="", 
-         x="",
-         fill="",
-         title=paste0("APR17"," ",cascade_indicator[i]," ","Partner Performance"),
-         subtitle="Rank from highest to lowest % of achievement",
-         caption="Source: ICPI FactView SitexIM Haiti")+
-    coord_flip()+
-    scale_fill_manual(values = fill_pall,guide = FALSE)+
-    scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
-    expand_limits(x = 0, y = 0)+
-    scale_x_discrete(expand = c(0, 0))+
-    theme(axis.text.x = element_text(size = 12),
-          axis.text.y = element_text(size = 13,face= "bold"), 
-          panel.background = element_blank(),
-          axis.line=element_line(),
-          axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
-          axis.ticks.y = element_blank())  
+plot1  <- partner_performance %>%
+           filter(fy2017Perf > 0) %>%
+           filter(indicator == cascade_indicator[i]) %>%
+           ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf))+
+           geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
+           geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.8,
+                     position=position_stack(vjust=0.5), colour="white") +
+           labs(y="", 
+                x="",
+                fill="",
+                title=paste0("APR17 ",cascade_indicator[i]," ", "Partner Performance"),
+                subtitle="Rank from highest to lowest % of achievement",
+                caption="Data source:ICPI FactView SitexIM Haiti")+
+           coord_flip()+
+           scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
+           expand_limits(x = 0, y = 0)+
+           scale_x_discrete(expand = c(0, 0))+
+           theme(axis.text.x = element_text(size = 12),
+                 axis.text.y = element_text(size = 13,face= "bold"), 
+                 panel.background = element_blank(),
+                 axis.line=element_line(),
+                 axis.title.x = element_text(size = 10),
+                 plot.title = element_text(size = 18),
+                 plot.subtitle = element_text(size = 12),
+                 axis.ticks.y = element_blank())  
 
  plot2 <- partner_performance %>%
-    filter(indicator == cascade_indicator[i], fy2017Cum > 0) %>%
-    ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum,fill= mechanism))+
-    geom_bar(stat = "identity")+
-    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4.5,
-              position=position_stack(vjust=0.5), colour="white") +
-    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.1, color="black")+
-    labs(y="", 
-         x="",
-         fill="",
-         title=paste0("APR17"," ",cascade_indicator[i]," ", "Partner Results vs Targets"),
-         subtitle="Rank from highest to lowest result",
-         caption="Source: ICPI FactView SitexIM Haiti")+
-    coord_flip()+
-     scale_fill_manual(values = fill_pall, guide = FALSE)+
+     filter(indicator == cascade_indicator[i], fy2017Cum > 0) %>%
+     ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum))+
+     geom_bar(stat = "identity",fill= "#1F78B4", width = 0.8)+
+     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4.8,
+               position=position_stack(vjust=0.5), colour="white") +
+     geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.5, color="#FF7F00")+
+     labs(y="", 
+          x="",
+          fill="",
+          title=paste0("APR17 ",cascade_indicator[i]," "," Partner Results vs Targets"),
+          subtitle="Rank from highest to lowest Results",
+          caption="Data source: ICPI FactView SitexIM Haiti")+
+     coord_flip()+
      scale_y_continuous(expand = c(0, 0))+
      expand_limits(x = 0, y = 0)+
      scale_x_discrete(expand = c(0, 0))+
-    theme(axis.text.x = element_text(size = 12),
-          axis.text.y = element_text(size = 13,face= "bold"), 
-          panel.background = element_blank(),
-          axis.line=element_line(),
-          axis.title.x = element_text(size = 10),
-          plot.title = element_text(size = 16),
-          axis.ticks.y = element_blank())  
+     theme(axis.text.x = element_text(size = 12),
+           axis.text.y = element_text(size = 13,face= "bold"), 
+           panel.background = element_blank(),
+           axis.line=element_line(),
+           axis.title.x = element_text(size = 10),
+           plot.title = element_text(size = 18),
+           plot.subtitle  = element_text(size = 12),
+           axis.ticks.y = element_blank())   
 
 dir.create(file.path("Figs/achievements"),showWarnings = FALSE)
 dir.create(file.path("Figs/results"),showWarnings = FALSE)
@@ -370,7 +372,7 @@ ou_level %>%
          fill="",
          title="APR17 Overall Performance",
          subtitle="",
-         caption="Source: ICPI FactView SitexIM Haiti")+
+         caption="Data source:ICPI FactView SitexIM Haiti")+
     scale_y_continuous(limits=c(0,180))+
     scale_y_continuous(labels = percent_format())+
     guides(fill = FALSE) +
@@ -398,7 +400,7 @@ partner_performance %>%
          fill="",
          title=paste0("HTS_TST_POS"," ", "Performance"),
          subtitle="",
-         caption="Source: ICPI FactView SitexIM Haiti")+
+         caption="Data source:ICPI FactView SitexIM Haiti")+
    scale_size_area(max_size = 22)+
     scale_fill_manual(values = fill_pall,guide = FALSE)+
     scale_y_continuous(labels = percent_format())+
@@ -421,11 +423,102 @@ partner_data_final %>%
     gather("fiscal_year","total",3:5) %>%
     filter(indicator == "TX_NEW") %>%
     ggplot(aes(fiscal_year,total))+
-        geom_point()+
+        geom_bar(stat = "identity")+
         facet_wrap(~mechanism)
-    
+
+############################ TX_NEW Trend ###############################################################
+
+site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator == "TX_NEW") %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(implementingmechanismname,fundingagency,psnu,facility,community,indicator,fy2015q2,fy2015q3,fy2015q4,
+           fy2016q1,fy2016q2,fy2016q3,fy2016q4,
+           fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q2 = sum(fy2015q2, na.rm = T),
+              fy2015q3 = sum(fy2015q3, na.rm = T),
+              fy2015q4 = sum(fy2015q4, na.rm = T),
+              fy2016q1 = sum(fy2016q1, na.rm = T),
+              fy2016q2 = sum(fy2016q2, na.rm = T),
+              fy2016q3 = sum(fy2016q3, na.rm = T),
+              fy2016q4 = sum(fy2016q4, na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    gather("fiscal_year","results",2:11) %>%
+    ggplot(aes(fiscal_year,results))+
+        geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
+        geom_text(aes( y = results,
+                      label=paste0(sprintf("%.0f",round(results,0)))),size = 4,vjust =-1.1 )+
+        labs(y="# new people enroled on ART", 
+             x="",
+             fill="",
+             title="TX_NEW Trend from FY15 to FY17",
+             subtitle="",
+             caption="Data source: ICPI FactView SitexIM Haiti")+
+    scale_y_continuous(breaks = seq(0,10000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+        theme(axis.text.x = element_text(size = 10,face="bold"),
+              axis.text.y = element_text(size = 13,face= "bold"), 
+              panel.background = element_blank(),
+              axis.line=element_line(),
+              axis.title.x = element_text(size = 8),
+              plot.title = element_text(size = 18),
+              plot.subtitle  = element_text(size = 12))   
 
 
+############### HTS_TST  vs HTS_YIELD ##################################################    
+
+hts_yield <- site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator %in% c("HTS_TST","HTS_TST_POS")) %>%
+    filter(standardizeddisaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(implementingmechanismname,fundingagency,psnu,facility,community,indicator,fy2015q2,fy2015q3,fy2015q4,
+           fy2016q1,fy2016q2,fy2016q3,fy2016q4,
+           fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q2 = sum(fy2015q2, na.rm = T),
+              fy2015q3 = sum(fy2015q3, na.rm = T),
+              fy2015q4 = sum(fy2015q4, na.rm = T),
+              fy2016q1 = sum(fy2016q1, na.rm = T),
+              fy2016q2 = sum(fy2016q2, na.rm = T),
+              fy2016q3 = sum(fy2016q3, na.rm = T),
+              fy2016q4 = sum(fy2016q4, na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    gather("fiscal_year","results",2:12) %>%
+    spread(indicator,results) %>%
+    mutate(HTS_YIELD = round(HTS_TST_POS/HTS_TST,3)) %>%
+    ggplot(aes(x= fiscal_year))+
+    geom_bar(aes(fiscal_year,HTS_TST), stat = "identity", fill = "#0072B2",width  = 0.7)+
+    geom_line(stat = "identity", aes(y=round(HTS_TST_POS/HTS_TST,3)),colour="#0072B2",size =1.5)+
+    geom_text(aes( y = HTS_TST,
+                   label=paste0(sprintf("%.0f",round(HTS_TST,0)))),size = 4,vjust =-1.1 )+
+    labs(y="", 
+         x="",
+         fill="",
+         title="HTS_TST Trend from FY15 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM Haiti")+
+    scale_y_continuous(sec.axis = sec_axis(~.*HTS_TST_POS*100),breaks = seq(0,600000,100000),limits =c(0,600000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12)) 
+
+write_csv(hts_yield,"hts_yield.csv")
 
 ## net new by partner
 ## trend by partner ~ facet
