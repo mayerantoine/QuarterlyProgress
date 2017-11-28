@@ -156,7 +156,94 @@ ou_level <- rbind(ou_level_data,tx_net_new)
 #ou_level
 
 write_csv(ou_level,"processed_data/ou_level.csv")
+################# Cascade FY17 ###############################################
 
+
+ou_level %>%
+    filter(indicator %in% c("HTS_TST_POS","TX_NEW","TX_NET_NEW")) %>%
+    select(indicator,fy2017Cum) %>%
+    ggplot(aes(x = reorder(indicator,-fy2017Cum),y= fy2017Cum))+
+        geom_bar(stat = "identity", width = 0.7) +
+geom_text(aes(label= comma(fy2017Cum)),size=4.5) +
+    labs(y="", 
+         x="",
+         fill="",
+         title="FY17 Cascade",
+         subtitle="",
+         caption= "Data source:ICPI FactView SitexIM Haiti")+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 18),
+          plot.subtitle = element_text(size = 12),
+          axis.ticks.y = element_blank())  
+    
+################## Patient Initiated not Linked by IM ################################################
+
+linkage <- partner_data_final %>%
+    filter(!(implementingmechanismname %in% old_mechanism)) %>%
+    filter(indicator %in% c("HTS_TST_POS","TX_NEW")) %>%
+    select(mechanism,indicator,fy2017Cum) %>%
+    group_by(mechanism,indicator) %>%
+    summarise(fy2017Cum = sum(fy2017Cum, na.rm = T)) %>%
+    spread(indicator,fy2017Cum) %>%
+    mutate(Patient_Not_Intiated = ifelse(HTS_TST_POS - TX_NEW < 0, 0,HTS_TST_POS - TX_NEW),
+           Linkage = ifelse(TX_NEW > 0, TX_NEW/HTS_TST_POS, 0 ))
+
+ write_csv(linkage, "linkage.csv")
+ 
+# Patient not initiated 
+ linkage %>%
+    filter(!is.na(Patient_Not_Intiated)) %>%
+    ggplot(mapping = aes(x=reorder(mechanism,Patient_Not_Intiated),y=Patient_Not_Intiated))+
+        geom_bar(stat = "identity",fill= "#FF6633", width = 0.8)+
+        geom_text(aes(label=comma(Patient_Not_Intiated)),size=4.5, hjust = 1.5, colour = "white") +
+        labs(y="", 
+             x="",
+             fill="",
+             title= "Patient identified but not initiated",
+             subtitle="",
+             caption= "Data source:ICPI FactView SitexIM Haiti")+
+        coord_flip()+
+      scale_y_continuous( limits = c(0, 1100),expand = c(0, 0))+
+        expand_limits(x = 0, y = 0)+
+        scale_x_discrete(expand = c(0, 0))+
+        theme(axis.text.x = element_text(size = 12),
+              axis.text.y = element_text(size = 13,face= "bold"), 
+              panel.background = element_blank(),
+              axis.line=element_line(),
+              axis.title.x = element_text(size = 10),
+              plot.title = element_text(size = 18),
+              plot.subtitle = element_text(size = 12),
+              axis.ticks.y = element_blank())  
+
+
+### Patient  Linkage by IM 
+linkage %>%
+    filter(!is.na(Patient_Not_Intiated)) %>%
+    ggplot(mapping = aes(x=reorder(mechanism,Linkage*100),y=Linkage))+
+    geom_bar(stat = "identity",fill= "#FF6633", width = 0.8)+
+    geom_text(aes(label=paste0(sprintf("%.0f", Linkage*100),"%")),size=4.5, hjust = 1.5, colour = "white") +
+    labs(y="", 
+         x="",
+         fill="",
+         title= "Linkage to Enrollement by Partner",
+         subtitle="",
+         caption= "Data source:ICPI FactView SitexIM Haiti")+
+    coord_flip()+
+   # scale_y_continuous(limits = c(0,100), labels = percent_format(), expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 18),
+          plot.subtitle = element_text(size = 12),
+          axis.ticks.y = element_blank())
 
 
 ################# Partner Performance Results ########################################################
@@ -215,7 +302,7 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
 
 partner_performance %>%
     filter(fy2017Perf > 0) %>%
-    filter(indicator == "TX_CURR") %>%
+    filter(indicator == "TX_NEW") %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf))+
     geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.8,
@@ -223,7 +310,7 @@ partner_performance %>%
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_CURR"," ", "Partner Performance"),
+         title=paste0("APR17 TX_NEW"," ", "Partner Performance"),
          subtitle="Rank from highest to lowest % of achievement",
          caption= "Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
@@ -520,10 +607,60 @@ hts_yield <- site_im %>%
 
 write_csv(hts_yield,"hts_yield.csv")
 
+
+################## Yield, Linkage , Retention Rate by IM  ###################################
+
+
+
+barriers <-  site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator %in% c("HTS_TST","HTS_TST_POS","TX_NEW","TX_RET")) %>%
+    filter(standardizeddisaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter( numeratordenom == "N") %>%
+    group_by(indicator) %>%
+    summarise(fy2017q1 = sum(fy2017q1,na.rm = T) ,
+              fy2017q2 = sum(fy2017q2,na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    mutate(fy2017Cum = fy2017q1+fy2017q2+fy2017q4+fy2017q3)
+
+
+tx_ret_d <- site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator %in% c("TX_RET")) %>%
+    filter(standardizeddisaggregate == "Total Denominator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter( numeratordenom == "D") %>%
+    group_by(indicator) %>%
+    summarise(fy2017q1 = sum(fy2017q1,na.rm = T) ,
+              fy2017q2 = sum(fy2017q2,na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    mutate(fy2017Cum = fy2017q1+fy2017q2+fy2017q4+fy2017q3)
+
+
+
+tx_ret_d <- data_frame(indicator = c("TX_RET_D"),
+                       fy2017q1 = tx_ret_d$fy2017q1,
+                       fy2017q2 = tx_ret_d$fy2017q2,
+                       fy2017q3 = tx_ret_d$fy2017q3,
+                       fy2017q4 = tx_ret_d$fy2017q4,
+                       fy2017Cum = tx_ret_d$fy2017Cum)
+
+barriers <- rbind(barriers,tx_ret_d)
+
+barriers %>%
+    select(indicator,fy2017Cum) %>%
+    spread(indicator,fy2017Cum) %>%
+    mutate(HTS_YIELD = HTS_TST_POS/HTS_TST,
+           Linkage = TX_NEW/ HTS_TST_POS,
+           Retention = TX_RET/TX_RET_D) %>%
+    ggplot(aes())
+
+
 ## net new by partner
 ## trend by partner ~ facet
-## overall TX_CURR trend
-## overall TX_NEW trand
 ## Why MSPP and PIH are low performer ? why they did not reach their target ?
     ## which sites are holding them back ?
     ## what district are they working in ?
