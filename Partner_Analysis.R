@@ -57,7 +57,7 @@ partner_data <- site_im %>%
     mutate(fy2017Cum  = fy2017q1+fy2017q2+fy2017q3+fy2017q4)
 
 
-## Partnet dataset for cummulative, need to calculate APR results
+## Partner dataset for cummulative, need to calculate APR results
 partner_data_cum <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_cummulative_indicator) %>%
@@ -97,14 +97,9 @@ partner_data_final[partner_data_final$implementingmechanismname ==
 
 ## We need to assgin new mechanism name to fy2016, fy2015 data, because mechanism
 ## has changed in 2017 for CDC Haiti, this is useful to have yearly trend for a specific partner
-site_by_mechanism_2017 <- partner_data_final %>%
-    filter(indicator == "HTS_TST") %>%
-    filter(!(implementingmechanismname %in% old_mechanism)) %>%
-    group_by(implementingmechanismname,facility) %>%
-    summarise(fy2017Cum = sum(fy2017Cum)) %>%
-    select(implementingmechanismname,facility) %>% as.data.frame()
 
-site_by_mechanism_2017 <- site_by_mechanism_2017[!is.na(site_by_mechanism_2017$facility),]
+
+
 
 
 ################# OU Level Results ##############################################################
@@ -180,6 +175,8 @@ geom_text(aes(label= comma(fy2017Cum)),size=4.5) +
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
     
+
+
 ################## Patient Initiated not Linked by IM ################################################
 
 linkage <- partner_data_final %>%
@@ -246,6 +243,20 @@ linkage %>%
           axis.ticks.y = element_blank())
 
 
+psnu_partner <- partner_data_final %>%
+    filter(!(implementingmechanismname %in% old_mechanism)) %>%
+    filter(indicator %in% c("TX_NEW")) %>%
+    select(psnu,mechanism,facility,indicator,fy2017Cum) %>%
+    group_by(psnu,mechanism,indicator) %>%
+    summarise( nb_sites = n_distinct(facility),
+              fy2017Cum = sum(fy2017Cum, na.rm = T)) %>%
+    spread(indicator,fy2017Cum) %>%
+   # mutate(Patient_Not_Intiated = ifelse(HTS_TST_POS - TX_NEW < 0, 0,HTS_TST_POS - TX_NEW),
+#           Linkage = ifelse(TX_NEW > 0, TX_NEW/HTS_TST_POS, 0 )) %>%
+    select(psnu, mechanism, nb_sites) %>%
+    spread(mechanism,nb_sites)
+
+
 ################# Partner Performance Results ########################################################
 
 
@@ -290,6 +301,36 @@ partner_performance_sp <- partner_performance %>%
 write_csv(partner_performance_sp,"processed_data/partner_performance_sp.csv")
 
 ## partner_performance
+
+partner_performance %>%
+    filter(fy2017Perf > 0) %>%
+    filter(mechanism == "MSPP/UGP") %>%
+    ggplot(mapping = aes(x=reorder(indicator,fy2017Perf),y=fy2017Perf))+
+    geom_hline(yintercept = 0.85)+
+    geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.8,
+              position=position_stack(vjust=0.5), colour="white") +
+    labs(y="", 
+         x="",
+         fill="",
+         title=paste0("APR17 UGP"," ", "% achievement "),
+         subtitle="",
+         caption= "Data source:ICPI FactView SitexIM Haiti")+
+    coord_flip()+
+    scale_y_continuous(labels = percent_format(),expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    scale_x_discrete(expand = c(0, 0))+
+    theme(axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 10),
+          plot.title = element_text(size = 18),
+          plot.subtitle = element_text(size = 12),
+          axis.ticks.y = element_blank()) 
+
+
+
 
 
 ################# Generate Visuals from Partner Performance Data ##########################################
@@ -471,7 +512,6 @@ ou_level %>%
           plot.title = element_text(size = 16) )  
 
 
-
 ################# Bubble Charts Partner Performance ##################################################
 ## Bubble charts x = Target,y =Performance, size = Results, color = Partner
 
@@ -501,17 +541,6 @@ partner_performance %>%
           legend.direction = "horizontal",
           legend.key.size = unit(1, "cm") )  
 
-############### Trend by Partner ##############################################################
-# Looking at the trend by IM for APR15, APR16, APR17
-
-partner_data_final %>%
-    group_by(mechanism,indicator) %>%
-    summarise(fy2015apr=sum(fy2015apr),fy2016apr=sum(fy2016apr), fy2017Cum=sum(fy2017Cum)) %>%
-    gather("fiscal_year","total",3:5) %>%
-    filter(indicator == "TX_NEW") %>%
-    ggplot(aes(fiscal_year,total))+
-        geom_bar(stat = "identity")+
-        facet_wrap(~mechanism)
 
 ############################ TX_NEW Trend ###############################################################
 
@@ -658,6 +687,122 @@ barriers %>%
            Retention = TX_RET/TX_RET_D) %>%
     ggplot(aes())
 
+
+
+################### Tx_net_NEW overall ############################################################
+
+# summarise tx_curr to calculate tx_net_new trend
+ site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator == "TX_CURR") %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(indicator,fy2015q3,fy2015q4,fy2016q1,fy2016q2,fy2016q3,fy2016q4,fy2017q1,fy2017q2,fy2017q3,fy2017q4) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q3 = sum(fy2015q3,na.rm = T),
+              fy2015q4 = sum(fy2015q4,na.rm = T),
+              fy2016q2 = sum(fy2016q2,na.rm = T),
+              fy2016q4 = sum(fy2016q4,na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    mutate(net_new_fy2015q4 = fy2015q4 -  fy2015q3,
+           net_new_fy2016q2 = fy2016q2 - fy2015q4,
+           net_new_fy2016q4 = fy2016q4 - fy2016q2,
+           net_new_fy2017q1 = fy2017q1 - fy2016q4,
+           net_new_fy2017q2 = fy2017q2 - fy2017q1,
+           net_new_fy2017q3 = fy2017q3 - fy2017q2,
+           net_new_fy2017q4 = fy2017q4 - fy2017q3) %>%
+    select(net_new_fy2016q2,net_new_fy2016q4,net_new_fy2017q1,
+           net_new_fy2017q2,net_new_fy2017q3,net_new_fy2017q4) %>%
+    gather("quarter","tx_net_new",1:6) %>%
+    ggplot(aes(quarter,tx_net_new))+
+    geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
+    geom_text(aes( y = tx_net_new,
+                   label=paste0(sprintf("%.0f",round(tx_net_new,0)))),size = 4,vjust =-1.1 )+
+    labs(y="# new people enroled on ART", 
+         x="",
+         fill="",
+         title="TX_NET_NEW Trend from FY16 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM Haiti")+
+    scale_y_continuous(breaks = seq(0,12000,1000),limits =c(0,12000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))
+
+
+################### TX_net_NEW  by Partner#########################################################
+
+partner_mapping <- read_csv("data/fy17_partner_mapping.csv")
+names(partner_mapping) <- c("partner_facility","mechanism")
+
+# summarise tx_curr to calculate tx_net_new By Partner
+tx_curr_facility <- partner_data_final %>%
+    filter(indicator=="TX_CURR") %>%
+    #filter(!(implementingmechanismname %in% c("BEST (Byen en ak Sante Timoun)","Dedup",""))) %>%
+    select(facility,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,
+           fy2017Cum,fy2017_targets) %>%
+    group_by(facility) %>%
+    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T),
+              fy2017Cum = sum(fy2017Cum, na.rm = T),
+              fy2017_targets = sum(fy2017_targets,na.rm = T)) 
+
+tx_curr_facility <- tx_curr_facility %>%
+                     left_join(partner_mapping,by = c("facility" = "partner_facility"))
+
+
+tx_net_new_partner <- tx_curr_facility %>%
+    group_by(mechanism) %>%
+    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T),
+              fy2017Cum = sum(fy2017Cum, na.rm = T),
+              fy2017_targets = sum(fy2017_targets,na.rm = T)) %>%
+    mutate(tx_net_new_q1 = fy2017q1 - fy2016apr,
+           tx_net_new_q2 = fy2017q2 - fy2017q1,
+           tx_net_new_q3 = fy2017q3 - fy2017q2,
+           tx_net_new_q4 = fy2017q4 - fy2017q3,
+           tx_net_new_cum = fy2017q4 - fy2016apr,
+           tx_net_new_target = fy2017_targets - fy2016apr) %>%
+    select(mechanism,tx_net_new_q1,tx_net_new_q2,tx_net_new_q3,tx_net_new_q4,tx_net_new_cum,tx_net_new_target) %>%
+    as.data.frame()
+
+
+
+map_df(tx_net_new_partner[2:5],sum)
+ggplot(aes(fiscal_year,results))+
+    geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
+    geom_text(aes( y = results,
+                   label=paste0(sprintf("%.0f",round(results,0)))),size = 4,vjust =-1.1 )+
+    labs(y="# new people enroled on ART", 
+         x="",
+         fill="",
+         title="TX_NEW Trend from FY15 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM Haiti")+
+    scale_y_continuous(breaks = seq(0,10000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))   
 
 ## net new by partner
 ## trend by partner ~ facet
