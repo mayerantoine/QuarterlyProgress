@@ -1,14 +1,9 @@
 #################################################################################
 ## Quaterly Progress Report  
-
 ## APR17                                                                          
-
 ## Mayer  Antoine , CDC Haiti                                                               
-
 ## Purpose : Create OU Level Report Table    
-
-## Updated : 11/22/2017                                                             
-
+## Updated : 12/1/2017                                                             
 ## https://github.com/mayerantoine/QuarterlyProgress                                                                               
 #################################################################################
 
@@ -23,7 +18,7 @@ rm(list = ls())
 
 ## IMPORT STE By IM Factview ----------------------------------------------------------
 
-source("./function/import_factview_data.R")
+source("./rscripts/00_import_factview_data.R")
 site_im <- import_factview_site_im()
 
 caption <- c("Data source:ICPI FactView SitexIM")
@@ -121,9 +116,9 @@ ou_level
 
 #write_csv(ou_level,"processed_data/ou_level.csv")
 
-## Overall achievement bar -------------------------------------------------------------------------
+## Overall achievement bar charts-------------------------------------------------------------------------
 
-ou_level %>%
+ g_ou_level <- ou_level %>%
     filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT"))) %>%
     ggplot(aes(x = reorder(indicator, fy2017Perf), y = fy2017Perf)) +
     geom_bar(stat = "identity",fill="#0072B2") +
@@ -151,7 +146,7 @@ ou_level %>%
 ## Cascade FY17 ---------------------------------------------------------------------------------
 
 
-ou_level %>%
+g_cascade <- ou_level %>%
     filter(indicator %in% c("HTS_TST_POS","TX_NEW","TX_NET_NEW")) %>%
     select(indicator,fy2017Cum) %>%
     ggplot(aes(x = reorder(indicator,-fy2017Cum),y= fy2017Cum))+
@@ -172,10 +167,12 @@ ou_level %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
-#################### Results vs Targets #######################################################################
+## Results vs Targets -------------------------------------------------------------------------------
 
 
-#################### Trend
+## Trend --------------------------------------------------------------------------------------------
 
 
-####################
+## Render Markdown -----------------------------------------------------------------------------------
+
+rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./rmds")

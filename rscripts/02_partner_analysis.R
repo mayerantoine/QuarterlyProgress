@@ -19,7 +19,7 @@ library(scales)
 rm(list = ls())
 ################# IMPORT STE By IM Factview ####################################################
 
-source("./function/import_factview_data.R")
+source("00_import_factview_data.R")
 site_im <- import_factview_site_im()
 
 

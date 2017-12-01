@@ -7,24 +7,31 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## GitHub Documents
+```{r init, warning= FALSE, message=FALSE}
+library(kableExtra)
+library(xtable)
 
-This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
-
-## Including Code
-
-You can include R code in the document as follows:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+## Overall Achievement (OU Level)
 
-You can also embed plots, for example:
+This table shows orverall achievement of the country from FY15 to FY17
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r ou_level,warning= FALSE, message=FALSE}
+
+knitr::kable(ou_level,"html") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                  full_width = F, position = "float_right",font_size = 12)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Overall Indicator achievement
+
+```{r ,warning= FALSE, message=FALSE}
+
+g_ou_level
+
+```
+
+
