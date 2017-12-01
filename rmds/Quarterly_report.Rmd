@@ -1,0 +1,89 @@
+---
+title: "Quarterly_report"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(knitr.table.format = "html") 
+
+```
+
+```{r  warning = FALSE , message=FALSE}
+library(knitr)
+library(kableExtra)
+
+source("Partner_Analysis.R")
+
+```
+
+
+
+## Ou Level results
+
+```{r ou_level, warning=FALSE,  message=FALSE}
+
+ou_level %>%
+    #filter(indicator %in% c("HTS_TST","HTS_TST_POS","TX_NEW","TX_CURR","TX_NET_NEW")) %>%
+    select(indicator,fy2015apr,fy2016apr,fy2017Cum,fy2017_targets,fy2017Perf) %>%
+    kable()
+```
+
+## Partner Performance
+
+```{r partner_p, warning= FALSE, message = FALSE}
+
+partner_performance_sp 
+
+
+
+```
+
+
+## Order by Performance TX_NEW
+
+```{r }
+
+partner_performance %>%
+   filter(indicator %in% c("TX_NEW")) %>%
+    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Perf),y=fy2017Perf))+
+        geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf),"%")),size=4,
+                position=position_stack(vjust=0.5), colour="white") +
+        coord_flip()+
+    theme(axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        panel.background = element_blank(),
+        axis.line=element_line(),
+        axis.title.x = element_text(size = 10),
+        plot.title = element_text(size = 16),
+        legend.position = "bottom")  
+
+```
+
+## Results vs Targets TX_NEW
+
+```{r}
+partner_performance %>%
+   filter(indicator %in% c("TX_NEW")) %>%
+    ggplot(mapping = aes(x=reorder(implementingmechanismname,fy2017Cum),y=fy2017Cum))+
+        geom_bar(stat = "identity")+
+    geom_text(aes(label=paste0(sprintf("%.0f", fy2017Cum))),size=4,
+                position=position_stack(vjust=0.5), colour="white") +
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets))+
+        coord_flip()+
+    theme(axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10), 
+        panel.background = element_blank(),
+        axis.line=element_line(),
+        axis.title.x = element_text(size = 10),
+        plot.title = element_text(size = 16),
+        legend.position = "bottom")  
+
+
+```
+
+## Bubble Charts
+
+```{r}
+```
