@@ -1,14 +1,13 @@
-#################################################################################
-# Partner Performance Report Script                                             
+#########################################################################################################
+#Quaterly Progress Report                                            
 # APR17                                                                          
-# Mayer  Antoine                                                                 
-# Purpose : Import FactView Site by IM data and create visual for Partner        
-#           Performance Monitoring                                              
-# Date : 11/22/2017                                                             
+# Mayer  Antoine, CDC Haiti                                                                 
+# Purpose : Create visual for  partner performance monitoring                                            
+# Update: 12/2/2017                                                             
+# https://github.com/mayerantoine/QuarterlyProgress                                                                                 
 #                                                                               
 #                                                                               
-#                                                                               
-#################################################################################
+#########################################################################################################
 
 
 library(tidyverse)
@@ -17,9 +16,9 @@ library(knitr)
 library(scales)
 
 rm(list = ls())
-################# IMPORT STE By IM Factview ####################################################
+## IMPORT STE By IM Factview ------------------------------------------------------------------------------
 
-source("00_import_factview_data.R")
+source("./rscripts/00_import_factview_data.R")
 site_im <- import_factview_site_im()
 
 
@@ -38,7 +37,7 @@ key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","PMTCT_ART","PMTCT_EID","PM
 
 key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET","OVC_HIVSTAT")
 
-######################## Partner Data  #########################################################
+## Partner Data ----------------------------------------------------------------------------------------------------
 
 partner_data <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
@@ -88,17 +87,15 @@ partner_data_final[partner_data_final$implementingmechanismname ==
 partner_data_final[partner_data_final$implementingmechanismname == 
                     "BEST (Byen en ak Sante Timoun)",]$mechanism <- "BEST"
 partner_data_final[partner_data_final$implementingmechanismname == 
-                       "SSQH Nord (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH Nord"
+                       "SSQH Nord (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH"
 partner_data_final[partner_data_final$implementingmechanismname == 
-                       "SSQH Centre/Sud (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH Sud"
+                       "SSQH Centre/Sud (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism  <- "SSQH"
 partner_data_final[partner_data_final$implementingmechanismname == 
                        "HTW (Health Through Walls)",]$mechanism  <- "HTW"
 partner_data_final[partner_data_final$implementingmechanismname == 
                        "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism  <- "MSPP/UGP"
 
-write_csv(partner_data_final,"processed_data/partner_final_data.csv")
-## We need to assgin new mechanism name to fy2016, fy2015 data, because mechanism
-## has changed in 2017 for CDC Haiti, this is useful to have yearly trend for a specific partner
+write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
 
 
 ################## Patient Initiated not Linked by IM ################################################
@@ -252,7 +249,7 @@ partner_performance_sp <- partner_performance %>%
         select(mechanism,indicator,fy2017Perf) %>%
         spread(mechanism,round(fy2017Perf,1))
 
-write_csv(partner_performance_sp,"processed_data/partner_performance_sp.csv")
+write_csv(partner_performance_sp,"./processed_data/partner_performance_sp.csv")
 
 ## partner_performance
 
@@ -294,7 +291,7 @@ fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
 
 partner_performance %>%
     filter(fy2017Perf > 0) %>%
-    filter(indicator == "TX_NEW") %>%
+    filter(indicator == "TX_CURR") %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Perf),y=fy2017Perf))+
     geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
     geom_text(aes(label=paste0(sprintf("%.0f", fy2017Perf*100),"%")),size=4.8,
@@ -302,7 +299,7 @@ partner_performance %>%
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_NEW"," ", "Partner Performance"),
+         title=paste0("APR17 TX_CURR"," ", "Partner Performance"),
          subtitle="Rank from highest to lowest % of achievement",
          caption= "Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
@@ -322,7 +319,7 @@ partner_performance %>%
     filter(indicator == "TX_CURR", fy2017Cum > 0) %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum))+
     geom_bar(stat = "identity",fill= "#1F78B4", width = 0.8)+
-    geom_text(aes(label=paste0(comma(fy2017Cum))),size=4,
+    geom_text(aes(label=paste0(comma(fy2017Cum))),size=4.5,
               position=position_stack(vjust=0.5), colour="white") +
     geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=1, size=1.5, color="#FF7F00")+
     labs(y="", 
