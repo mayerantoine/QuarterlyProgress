@@ -110,7 +110,7 @@ linkage <- partner_data_final %>%
     mutate(Patient_Not_Intiated = ifelse(HTS_TST_POS - TX_NEW < 0, 0,HTS_TST_POS - TX_NEW),
            Linkage = ifelse(TX_NEW > 0, TX_NEW/HTS_TST_POS, 0 ))
 
-# write_csv(linkage, "linkage.csv")
+write_csv(linkage, "./processed_data/linkage.csv")
  
 # Patient not initiated 
  linkage %>%
@@ -684,8 +684,21 @@ tx_curr_facility <- tx_curr_facility %>%
                      left_join(partner_mapping,by = c("facility" = "partner_facility"))
 
 
+
+tx_curr_facility <- tx_curr_facility[!is.na(tx_curr_facility$mechanism),]
+#tx_net_new_partner$mechanism_name <- NA
+tx_curr_facility$mechanism_name <- tx_curr_facility$mechanism
+tx_curr_facility[tx_curr_facility$mechanism == 
+                       "SSQH Nord (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism_name  <- "SSQH"
+tx_curr_facility[tx_curr_facility$mechanism == 
+                       "SSQH Centre/Sud (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism_name  <- "SSQH"
+tx_curr_facility[tx_curr_facility$mechanism == 
+                       "HTW (Health Through Walls)",]$mechanism_name  <- "HTW"
+tx_curr_facility[tx_curr_facility$mechanism == 
+                       "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism_name  <- "MSPP/UGP"
+
 tx_net_new_partner <- tx_curr_facility %>%
-    group_by(mechanism) %>%
+    group_by(mechanism_name) %>%
     summarise(fy2016apr = sum(fy2016apr,na.rm = T),
               fy2017q1 = sum(fy2017q1, na.rm = T),
               fy2017q2 = sum(fy2017q2, na.rm = T),
@@ -699,20 +712,10 @@ tx_net_new_partner <- tx_curr_facility %>%
            tx_net_new_q4 = fy2017q4 - fy2017q3,
            tx_net_new_cum = fy2017q4 - fy2016apr,
            tx_net_new_target = fy2017_targets - fy2016apr) %>%
-    select(mechanism,tx_net_new_q1,tx_net_new_q2,tx_net_new_q3,tx_net_new_q4,tx_net_new_cum,tx_net_new_target) %>%
+    select(mechanism_name,tx_net_new_q1,tx_net_new_q2,tx_net_new_q3,tx_net_new_q4,tx_net_new_cum,tx_net_new_target) %>%
     as.data.frame()
 
-tx_net_new_partner <- tx_net_new_partner[!is.na(tx_net_new_partner$mechanism),]
-#tx_net_new_partner$mechanism_name <- NA
-tx_net_new_partner$mechanism_name <- tx_net_new_partner$mechanism
-tx_net_new_partner[tx_net_new_partner$mechanism == 
-                       "SSQH Nord (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism_name  <- "SSQH Nord"
-tx_net_new_partner[tx_net_new_partner$mechanism == 
-                       "SSQH Centre/Sud (Services de Sant? de Qualit? pour Ha?ti)",]$mechanism_name  <- "SSQH Sud"
-tx_net_new_partner[tx_net_new_partner$mechanism == 
-                       "HTW (Health Through Walls)",]$mechanism_name  <- "HTW"
-tx_net_new_partner[tx_net_new_partner$mechanism == 
-                       "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism_name  <- "MSPP/UGP"
+
 
 # TX_NET_NEW Partner Performance
 tx_net_new_partner %>%
@@ -720,7 +723,7 @@ tx_net_new_partner %>%
     ggplot(mapping = aes(x=reorder(mechanism_name,tx_net_new_cum),y=tx_net_new_cum))+
     geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
     geom_text(aes(label=paste0(sprintf("%.0f", tx_net_new_cum))),size=4.8, colour="white", hjust = 1.3) +
-    geom_errorbar(aes(ymin=tx_net_new_target,ymax=tx_net_new_target),width=1, size=1.5, color="#FF7F00") +
+   # geom_errorbar(aes(ymin=tx_net_new_target,ymax=tx_net_new_target),width=1, size=1.5, color="#FF7F00") +
     labs(y="", 
          x="",
          fill="",
@@ -740,7 +743,7 @@ tx_net_new_partner %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank()) 
 
-write_csv(tx_net_new_partner,"tx_net_new_partner.csv")
+write_csv(tx_net_new_partner,"./processed_data/tx_net_new_partner.csv")
 
 ###############
 
