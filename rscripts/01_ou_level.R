@@ -58,12 +58,12 @@ ou_level_non_cummulative <- site_im %>%
     
 # OU Level Results for cummulative    
 ou_level_cummulative <- site_im %>%
-    #filter(snu1 != "_Military Haiti") %>%
+    filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_cummulative_indicator) %>%
     filter(disaggregate == "Total Numerator") %>%
-   # filter(indicatortype == "DSD") %>% 
+    filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
-    select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    select(indicatorfy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
     group_by(indicator) %>%
     summarise(fy2015apr = sum(fy2015apr, na.rm = T),
               fy2016apr = sum(fy2016apr,na.rm = T),

@@ -636,9 +636,10 @@ barriers %>%
            net_new_fy2017q2 = fy2017q2 - fy2017q1,
            net_new_fy2017q3 = fy2017q3 - fy2017q2,
            net_new_fy2017q4 = fy2017q4 - fy2017q3) %>%
-    select(net_new_fy2016q2,net_new_fy2016q4,net_new_fy2017q1,
-           net_new_fy2017q2,net_new_fy2017q3,net_new_fy2017q4) %>%
-    gather("quarter","tx_net_new",1:6) %>%
+    mutate(net_new_fy2017q1q2 =net_new_fy2017q1+net_new_fy2017q2,
+           net_new_fy2017q3q4 = net_new_fy2017q3+net_new_fy2017q4) %>%
+    select(net_new_fy2016q2,net_new_fy2016q4,net_new_fy2017q1q2,net_new_fy2017q3q4) %>%
+    gather("quarter","tx_net_new",1:4) %>%
     ggplot(aes(quarter,tx_net_new))+
     geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
     geom_text(aes( y = tx_net_new,

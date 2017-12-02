@@ -30,7 +30,7 @@ knitr::kable(ou_level,"html") %>%
 
 ```{r ,warning= FALSE, message=FALSE}
 
-g_ou_level
+print(g_ou_level)
 
 ```
 
