@@ -94,11 +94,15 @@ partner_data_final[partner_data_final$implementingmechanismname ==
                        "HTW (Health Through Walls)",]$mechanism  <- "HTW"
 partner_data_final[partner_data_final$implementingmechanismname == 
                        "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism  <- "MSPP/UGP"
+#partner_data_final[partner_data_final$implementingmechanismname == 
+#                       "GHESKIO 1924",]$mechanism  <- "GHESKIO"
+#partner_data_final[partner_data_final$implementingmechanismname == 
+#                       "GHESKIO 1969",]$mechanism  <- "GHESKIO"
 
-write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
+#write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
 
 
-################## Patient Initiated not Linked by IM ################################################
+## Patient Initiated not Linked by IM --------------------------------------------------------------------------
 
 linkage <- partner_data_final %>%
     filter(!(implementingmechanismname %in% old_mechanism)) %>%
@@ -208,7 +212,7 @@ not_intiated <- not_intiated %>%
 write_csv(not_intiated,"not_initiated.csv")
 
 
-################# Partner Performance Results ########################################################
+## Partner Performance Results ---------------------------------------------------------------------------------
 
 
 # Partner Performance: Results vs Targets = Performance
@@ -249,7 +253,7 @@ partner_performance_sp <- partner_performance %>%
         select(mechanism,indicator,fy2017Perf) %>%
         spread(mechanism,round(fy2017Perf,1))
 
-write_csv(partner_performance_sp,"./processed_data/partner_performance_sp.csv")
+write_csv(partner_performance_sp,"./processed_data/partner_performance_sp_2.csv")
 
 ## partner_performance
 
@@ -281,9 +285,8 @@ partner_performance %>%
           axis.ticks.y = element_blank()) 
 
 
-################# Generate Visuals from Partner Performance Data ##########################################
+## Generate Visuals from Partner Performance Data ---------------------------------------------------------------------------------
 
-## Generate Visuals from Partner Performance Data
 
 fill_pall <- c("BEST" = "#FFFF99","CDS 1528"="#B15928","CMMB 1970"="#6A3D9A",
                "FOSREF 1925"="#CAB2D6","GHESKIO 1924"="#FF7F00","GHESKIO 1969"="#999966","HTW"="#E31A1C",
@@ -316,7 +319,7 @@ partner_performance %>%
           axis.ticks.y = element_blank())  
 
 partner_performance %>%
-    filter(indicator == "TX_CURR", fy2017Cum > 0) %>%
+    filter(indicator == "TX_NEW", fy2017Cum > 0) %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum))+
     geom_bar(stat = "identity",fill= "#1F78B4", width = 0.8)+
     geom_text(aes(label=paste0(comma(fy2017Cum))),size=4.5,
@@ -325,7 +328,7 @@ partner_performance %>%
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_CURR"," "," Partner Results vs Targets"),
+         title=paste0("APR17 TX_NEW"," "," Partner Results vs Targets"),
          subtitle="Rank from highest to lowest results",
          caption="Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
@@ -434,7 +437,7 @@ dir.create(file.path("Figs/results"),showWarnings = FALSE)
 generatePerformancePlot(cascade_indicator,partner_performance)
 
 
-################# Bubble Charts Partner Performance ##################################################
+## Bubble Charts Partner Performance ##################################################
 ## Bubble charts x = Target,y =Performance, size = Results, color = Partner
 
 partner_performance %>%
@@ -464,52 +467,8 @@ partner_performance %>%
           legend.key.size = unit(1, "cm") )  
 
 
-################# TX_NEW Trend ###############################################################
 
-site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
-    filter(indicator == "TX_NEW") %>%
-    filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
-    filter(numeratordenom == "N") %>%
-    select(implementingmechanismname,fundingagency,psnu,facility,community,indicator,fy2015q2,fy2015q3,fy2015q4,
-           fy2016q1,fy2016q2,fy2016q3,fy2016q4,
-           fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
-    group_by(indicator) %>%
-    summarise(fy2015q2 = sum(fy2015q2, na.rm = T),
-              fy2015q3 = sum(fy2015q3, na.rm = T),
-              fy2015q4 = sum(fy2015q4, na.rm = T),
-              fy2016q1 = sum(fy2016q1, na.rm = T),
-              fy2016q2 = sum(fy2016q2, na.rm = T),
-              fy2016q3 = sum(fy2016q3, na.rm = T),
-              fy2016q4 = sum(fy2016q4, na.rm = T),
-              fy2017q1 = sum(fy2017q1, na.rm = T),
-              fy2017q2 = sum(fy2017q2, na.rm = T),
-              fy2017q3 = sum(fy2017q3,na.rm = T),
-              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
-    gather("fiscal_year","results",2:11) %>%
-    ggplot(aes(fiscal_year,results))+
-        geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
-        geom_text(aes( y = results,
-                      label=paste0(sprintf("%.0f",round(results,0)))),size = 4,vjust =-1.1 )+
-        labs(y="# new people enroled on ART", 
-             x="",
-             fill="",
-             title="TX_NEW Trend from FY15 to FY17",
-             subtitle="",
-             caption="Data source: ICPI FactView SitexIM Haiti")+
-    scale_y_continuous(breaks = seq(0,10000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
-    expand_limits(x = 0, y = 0)+
-        theme(axis.text.x = element_text(size = 10,face="bold"),
-              axis.text.y = element_text(size = 13,face= "bold"), 
-              panel.background = element_blank(),
-              axis.line=element_line(),
-              axis.title.x = element_text(size = 8),
-              plot.title = element_text(size = 18),
-              plot.subtitle  = element_text(size = 12))   
-
-
-################## HTS_TST  vs HTS_YIELD ##################################################    
+## HTS_TST  vs HTS_YIELD ##################################################    
 
 hts_yield <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
@@ -559,7 +518,7 @@ hts_yield <- site_im %>%
 write_csv(hts_yield,"hts_yield.csv")
 
 
-################## Yield, Linkage , Retention Rate by IM  ###################################
+## Yield, Linkage , Retention Rate by IM  ###################################
 
 
 
@@ -610,7 +569,7 @@ barriers %>%
     ggplot(aes())
 
 
-################### Tx_net_NEW overall ############################################################
+## Tx_net_NEW overall -----------------------------------------------------------------------------------------------
 
 # summarise tx_curr to calculate tx_net_new trend
  site_im %>%
@@ -619,10 +578,10 @@ barriers %>%
     filter(disaggregate == "Total Numerator") %>%
     filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
-    select(indicator,fy2015q3,fy2015q4,fy2016q1,fy2016q2,fy2016q3,fy2016q4,fy2017q1,fy2017q2,fy2017q3,fy2017q4) %>%
+    select(indicator,fy2015q3,fy2015apr,fy2016q1,fy2016q2,fy2016q3,fy2016q4,fy2017q1,fy2017q2,fy2017q3,fy2017q4) %>%
     group_by(indicator) %>%
     summarise(fy2015q3 = sum(fy2015q3,na.rm = T),
-              fy2015q4 = sum(fy2015q4,na.rm = T),
+              fy2015q4 = sum(fy2015apr,na.rm = T),
               fy2016q2 = sum(fy2016q2,na.rm = T),
               fy2016q4 = sum(fy2016q4,na.rm = T),
               fy2017q1 = sum(fy2017q1, na.rm = T),
@@ -651,6 +610,7 @@ barriers %>%
          subtitle="",
          caption="Data source: ICPI FactView SitexIM Haiti")+
     scale_y_continuous(breaks = seq(0,12000,1000),limits =c(0,12000),labels =comma,expand = c(0, 0))+
+    scale_x_discrete(labels =c("FY16 Q1+Q2","FY16 Q3+Q4","FY17 Q1+Q2","FY17 Q3+Q4"))+
     expand_limits(x = 0, y = 0)+
     theme(axis.text.x = element_text(size = 10,face="bold"),
           axis.text.y = element_text(size = 13,face= "bold"), 
@@ -661,7 +621,7 @@ barriers %>%
           plot.subtitle  = element_text(size = 12))
 
 
-################### TX_net_NEW  by Partner#########################################################
+## TX_net_NEW  by Partner ------------------------------------------------------------------------------------
 
 partner_mapping <- read_csv("data/fy17_partner_mapping.csv")
 names(partner_mapping) <- c("partner_facility","mechanism")
@@ -697,6 +657,10 @@ tx_curr_facility[tx_curr_facility$mechanism ==
                        "HTW (Health Through Walls)",]$mechanism_name  <- "HTW"
 tx_curr_facility[tx_curr_facility$mechanism == 
                        "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism_name  <- "MSPP/UGP"
+tx_curr_facility[tx_curr_facility$mechanism == 
+                     "GHESKIO 1924",]$mechanism_name  <- "GHESKIO"
+tx_curr_facility[tx_curr_facility$mechanism == 
+                     "GHESKIO 1969",]$mechanism_name  <- "GHESKIO"
 
 tx_net_new_partner <- tx_curr_facility %>%
     group_by(mechanism_name) %>%
@@ -744,7 +708,7 @@ tx_net_new_partner %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank()) 
 
-write_csv(tx_net_new_partner,"./processed_data/tx_net_new_partner.csv")
+write_csv(tx_net_new_partner,"./processed_data/tx_net_new_partner_2.csv")
 
 ###############
 

@@ -63,7 +63,7 @@ ou_level_cummulative <- site_im %>%
     filter(disaggregate == "Total Numerator") %>%
     filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
-    select(indicatorfy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
     group_by(indicator) %>%
     summarise(fy2015apr = sum(fy2015apr, na.rm = T),
               fy2016apr = sum(fy2016apr,na.rm = T),
@@ -79,7 +79,6 @@ ou_level_cummulative <- site_im %>%
 ou_level <-  rbind(ou_level_cummulative,ou_level_non_cummulative)  
     
     
-
 # summarise tx_curr to calculate tx_net_new
 tx_curr <- site_im %>%
    # filter(snu1 != "_Military Haiti") %>%
@@ -119,7 +118,7 @@ ou_level
 ## Overall achievement bar charts-------------------------------------------------------------------------
 
  g_ou_level <- ou_level %>%
-    filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT"))) %>%
+    filter(!(indicator %in% c("TB_STAT_POS","OVC_HIVSTAT","OVC_SERV"))) %>%
     ggplot(aes(x = reorder(indicator, fy2017Perf), y = fy2017Perf)) +
     geom_bar(stat = "identity",fill="#0072B2") +
     geom_hline(yintercept = 85)+
@@ -131,7 +130,7 @@ ou_level
          fill="",
          title="APR17 Overall Performance",
          subtitle="",
-         caption="Data source:ICPI FactView SitexIM Haiti")+
+         caption="Data source:ICPI FactView SitexIM")+
     #scale_y_continuous(limits=c(0,180))+
     #scale_y_continuous(labels = percent_format())+
     guides(fill = FALSE) +
@@ -148,16 +147,17 @@ ou_level
 
 g_cascade <- ou_level %>%
     filter(indicator %in% c("HTS_TST_POS","TX_NEW","TX_NET_NEW")) %>%
-    select(indicator,fy2017Cum) %>%
+    select(indicator,fy2017Cum,fy2017_targets) %>%
     ggplot(aes(x = reorder(indicator,-fy2017Cum),y= fy2017Cum))+
     geom_bar(stat = "identity", width = 0.7) +
-    geom_text(aes(label= comma(fy2017Cum)),size=4.5) +
+    geom_text(aes(label= comma(fy2017Cum)),size=4.5,vjust = 1.5,colour = "white") +
+    geom_errorbar(aes(ymin=fy2017_targets,ymax=fy2017_targets),width=0.5, size=1.5, color="#FF7F00")+
     labs(y="", 
          x="",
          fill="",
          title="FY17 Cascade",
          subtitle="",
-         caption= "Data source:ICPI FactView SitexIM Haiti")+
+         caption= "Data source:ICPI FactView SitexIM")+
     theme(axis.text.x = element_text(size = 12),
           axis.text.y = element_text(size = 13,face= "bold"), 
           panel.background = element_blank(),
@@ -167,12 +167,100 @@ g_cascade <- ou_level %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
-## Results vs Targets -------------------------------------------------------------------------------
 
+## TX_NEW Trend --------------------------------------------------------------------------------------------
 
-## Trend --------------------------------------------------------------------------------------------
+site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator == "TX_NEW") %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(indicator,fy2015q3,fy2015q4,fy2016q1,fy2016q2,fy2016q3,fy2016q4,
+           fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q3 = sum(fy2015q3, na.rm = T),
+              fy2015q4 = sum(fy2015q4, na.rm = T),
+              fy2016q1 = sum(fy2016q1, na.rm = T),
+              fy2016q2 = sum(fy2016q2, na.rm = T),
+              fy2016q3 = sum(fy2016q3, na.rm = T),
+              fy2016q4 = sum(fy2016q4, na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    gather("fiscal_year","results",2:11) %>%
+    ggplot(aes(fiscal_year,results))+
+    geom_bar(stat = "identity", fill = "#0072B2",width  = 0.7)+
+    geom_text(aes( y = results,
+                   label=paste0(sprintf("%.0f",round(results,0)))),size = 4,vjust =-1.1 )+
+    labs(y="# new people enroled on ART", 
+         x="",
+         fill="",
+         title="TX_NEW Trend from FY15 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM")+
+    scale_y_continuous(breaks = seq(0,10000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))   
 
+## TX_CURR Trend -----------------------------------------------------------------------------------------
 
-## Render Markdown -----------------------------------------------------------------------------------
+site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator == "TX_CURR") %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(indicator,fy2015q4,fy2016q2,fy2016q4,
+           fy2017q1,fy2017q2,fy2017q3,fy2017q4) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q4 = sum(fy2015q4, na.rm = T),
+              fy2016q2 = sum(fy2016q2, na.rm = T),
+              fy2016q4 = sum(fy2016q4, na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    gather("quarter","results",2:8) %>%
+    ggplot(aes(x=factor(quarter),y=results, group =1))+
+        geom_line()+
+        geom_point()+
+    geom_text(aes( y = results,
+                   label=paste0(sprintf("%.0f",round(results,0)))),size = 4,vjust =-1.1 )+
+    labs(y="# patient on ART", 
+         x="",
+         fill="",
+         title="TX_CURR Trend from FY15 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM")+
+    scale_y_continuous(breaks = seq(0,100000,10000),limits =c(0,100000),labels =comma,expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))
+
+## HTS and PMTCT_STAT yield --------------------------------------------------------------------------
+
+## Linkage --------------------------------------------------------------------------------------------
+
+## Tx_Net_New -----------------------------------------------------------------------------------------
+
+## Coverage Indicator ---------------------------------------------------------------------------------
+    # PMTCT_ART
+    # TX_RET
+    # TX_PVLS
+
+## Render Markdown ------------------------------------------------------------------------------------
 
 rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./rmds")
