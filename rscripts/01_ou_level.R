@@ -252,6 +252,53 @@ site_im %>%
 
 ## HTS and PMTCT_STAT yield --------------------------------------------------------------------------
 
+site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator %in% c("HTS_TST","HTS_TST_POS","PMTCT_STAT","PMTCT_STAT_POS")) %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(indicator,fy2015q4,fy2016q2,fy2016q4,
+           fy2017q1,fy2017q2,fy2017q3,fy2017q4) %>%
+    group_by(indicator) %>%
+    summarise(fy2015q4 = sum(fy2015q4, na.rm = T),
+              fy2016q2 = sum(fy2016q2, na.rm = T),
+              fy2016q4 = sum(fy2016q4, na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T)) %>%
+    gather("quarter","results",2:8) %>%
+    spread(indicator,results) %>%
+    mutate(HTS_YIELD = round(HTS_TST_POS/HTS_TST,3),
+           PMTCT_STAT_YIELD = round(PMTCT_STAT_POS/ PMTCT_STAT,3)) %>%
+    select(quarter,HTS_YIELD,PMTCT_STAT_YIELD) %>%
+    gather("indicator","results",2:3) %>%
+    ggplot(aes(x=factor(quarter),y=results, group =1))+
+    geom_line()+
+    geom_point()+
+    geom_text(aes( y = results,
+                   label=paste0(results*100,"%")),size = 4,vjust =-1.1 )+
+    facet_wrap(~indicator)+
+    labs(y="% Yield", 
+         x="",
+         fill="",
+         title="HTS_TST Yield Trend from FY15 to FY17",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM")+
+    scale_y_continuous(limits =c(0,0.05),labels = percent_format(),expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))
+
+
+
+
 ## Linkage --------------------------------------------------------------------------------------------
 
 ## Tx_Net_New -----------------------------------------------------------------------------------------
