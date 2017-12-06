@@ -607,3 +607,48 @@ print(g_ou_level)
 ```
 
 ![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-1-1.png)
+
+Cascade FY17
+------------
+
+``` r
+print(gg_cascade)
+```
+
+![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-2-1.png)
+
+TX\_NEW Trend
+-------------
+
+``` r
+print(tx_new_trend)
+```
+
+![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-3-1.png)
+
+TX\_CURR Trend
+--------------
+
+``` r
+print(tx_curr_trend)
+```
+
+![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-4-1.png)
+
+HTS and PMTCT\_STAT yield
+-------------------------
+
+``` r
+print(gg_hts_yield)
+```
+
+![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-5-1.png)
+
+Linkage to Treatment
+--------------------
+
+``` r
+print(gg_linkage)
+```
+
+![](C:\Users\wsn8\Documents\QuarterlyProgress\rmds\ou_level_report_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-6-1.png)

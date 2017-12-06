@@ -34,7 +34,6 @@ key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","PMTCT_ART","PMTCT_EID","PM
 
 key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET","OVC_HIVSTAT")
 
-
 ## OU Level Results --------------------------------------------------------------------
 
 # OU Level Results for non-cummalative 
@@ -61,7 +60,7 @@ ou_level_cummulative <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_cummulative_indicator) %>%
     filter(disaggregate == "Total Numerator") %>%
-    filter(indicatortype == "DSD") %>% 
+   # filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
     select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
     group_by(indicator) %>%
@@ -140,12 +139,13 @@ ou_level
           axis.line= element_line(),
           axis.title.x = element_text(size = 10),
           plot.title = element_text(size = 16) )
-        
+# save plots as .png
+ggsave(g_ou_level, filename =paste("overall_achievement_bar",".png", sep=''), path = "Figs/", scale=2)   
 
 ## Cascade FY17 ---------------------------------------------------------------------------------
 
 
-g_cascade <- ou_level %>%
+gg_cascade <- ou_level %>%
     filter(indicator %in% c("HTS_TST_POS","TX_NEW","TX_NET_NEW")) %>%
     select(indicator,fy2017Cum,fy2017_targets) %>%
     ggplot(aes(x = reorder(indicator,-fy2017Cum),y= fy2017Cum))+
@@ -167,11 +167,14 @@ g_cascade <- ou_level %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
+ggsave(gg_cascade, filename =paste("CascadeFY17",".png", sep=''), path = "Figs/", scale=2)
 
 ## TX_NEW Trend --------------------------------------------------------------------------------------------
 
-site_im %>%
-    filter(snu1 != "_Military Haiti") %>%
+
+site_im$fy2015q4 <- as.numeric(site_im$fy2015q4)
+tx_new_trend <- site_im %>%
+    #filter(snu1 != "_Military Haiti") %>%
     filter(indicator == "TX_NEW") %>%
     filter(disaggregate == "Total Numerator") %>%
     filter(indicatortype == "DSD") %>% 
@@ -200,7 +203,7 @@ site_im %>%
          title="TX_NEW Trend from FY15 to FY17",
          subtitle="",
          caption="Data source: ICPI FactView SitexIM")+
-    scale_y_continuous(breaks = seq(0,10000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
+   # scale_y_continuous(breaks = seq(0,50000,1000),limits =c(0,10000),labels =comma,expand = c(0, 0))+
     expand_limits(x = 0, y = 0)+
     theme(axis.text.x = element_text(size = 10,face="bold"),
           axis.text.y = element_text(size = 13,face= "bold"), 
@@ -210,9 +213,11 @@ site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))   
 
+ggsave(tx_new_trend, filename =paste("tx_new_trend",".png", sep=''), path = "Figs/", scale=2)
+
 ## TX_CURR Trend -----------------------------------------------------------------------------------------
 
-site_im %>%
+tx_curr_trend <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator == "TX_CURR") %>%
     filter(disaggregate == "Total Numerator") %>%
@@ -240,7 +245,7 @@ site_im %>%
          title="TX_CURR Trend from FY15 to FY17",
          subtitle="",
          caption="Data source: ICPI FactView SitexIM")+
-    scale_y_continuous(breaks = seq(0,100000,10000),limits =c(0,100000),labels =comma,expand = c(0, 0))+
+    #scale_y_continuous(breaks = seq(0,100000,10000),limits =c(0,100000),labels =comma,expand = c(0, 0))+
     expand_limits(x = 0, y = 0)+
     theme(axis.text.x = element_text(size = 10,face="bold"),
           axis.text.y = element_text(size = 13,face= "bold"), 
@@ -250,9 +255,12 @@ site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))
 
+
+ggsave(tx_curr_trend, filename =paste("tx_curr_trend",".png", sep=''), path = "Figs/", scale=2)
+
 ## HTS and PMTCT_STAT yield --------------------------------------------------------------------------
 
-site_im %>%
+gg_hts_yield <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% c("HTS_TST","HTS_TST_POS","PMTCT_STAT","PMTCT_STAT_POS")) %>%
     filter(disaggregate == "Total Numerator") %>%
@@ -286,7 +294,7 @@ site_im %>%
          title="HTS_TST Yield Trend from FY15 to FY17",
          subtitle="",
          caption="Data source: ICPI FactView SitexIM")+
-    scale_y_continuous(limits =c(0,0.05),labels = percent_format(),expand = c(0, 0))+
+   # scale_y_continuous(limits =c(0,0.05),labels = percent_format(),expand = c(0, 0))+
     expand_limits(x = 0, y = 0)+
     theme(axis.text.x = element_text(size = 10,face="bold"),
           axis.text.y = element_text(size = 13,face= "bold"), 
@@ -296,10 +304,46 @@ site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))
 
-
-
+ggsave(gg_hts_yield, filename =paste("gg_hts_yield",".png", sep=''), path = "Figs/", scale=2)
 
 ## Linkage --------------------------------------------------------------------------------------------
+
+gg_linkage <- site_im %>%
+    filter(snu1 != "_Military Haiti") %>%
+    filter(indicator %in% c("HTS_TST_POS","TX_NEW")) %>%
+    filter(disaggregate == "Total Numerator") %>%
+    filter(indicatortype == "DSD") %>% 
+    filter(numeratordenom == "N") %>%
+    select(indicator,fy2015apr,fy2016apr,fy2017apr) %>%
+    group_by(indicator) %>%
+    summarise(fy2015apr = sum(fy2015apr, na.rm = T),
+              fy2016apr = sum(fy2016apr, na.rm = T),
+              fy2017apr = sum(fy2017apr,na.rm = T)) %>%
+    gather("year","results",2:4) %>%
+    #spread(indicator,results) %>%
+    #mutate(linkage =as.numeric(round(TX_NEW/HTS_TST_POS,3))) %>%
+    #gather("indicator","results",2:4) %>%
+    ggplot(aes(x=year,y=results,fill = indicator))+
+        geom_bar(stat = "identity",position = "dodge")+
+    geom_text(aes(y = results,label=comma(results)),
+              position = position_dodge(width = 1.1),vjust =-1.1)+
+    labs(y="# of patients", 
+         x="",
+         fill="",
+         title="Linkage to Treatment",
+         subtitle="",
+         caption="Data source: ICPI FactView SitexIM")+
+    scale_y_continuous(limits =c(0,35000),expand = c(0, 0))+
+    expand_limits(x = 0, y = 0)+
+    theme(axis.text.x = element_text(size = 10,face="bold"),
+          axis.text.y = element_text(size = 13,face= "bold"), 
+          panel.background = element_blank(),
+          axis.line=element_line(),
+          axis.title.x = element_text(size = 8),
+          plot.title = element_text(size = 18),
+          plot.subtitle  = element_text(size = 12))
+    
+ggsave(gg_linkage, filename =paste("gg_linkage",".png", sep=''), path = "Figs/", scale=2)
 
 ## Tx_Net_New -----------------------------------------------------------------------------------------
 
@@ -311,3 +355,4 @@ site_im %>%
 ## Render Markdown ------------------------------------------------------------------------------------
 
 rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./rmds")
+rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "html_document",output_dir="./report")

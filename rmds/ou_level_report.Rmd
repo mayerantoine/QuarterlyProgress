@@ -35,3 +35,54 @@ print(g_ou_level)
 ```
 
 
+
+## Cascade FY17
+
+```{r ,warning= FALSE, message=FALSE}
+
+print(gg_cascade)
+
+```
+
+
+
+## TX_NEW Trend
+
+```{r ,warning= FALSE, message=FALSE}
+
+print(tx_new_trend)
+
+```
+
+
+
+## TX_CURR Trend
+
+```{r ,warning= FALSE, message=FALSE}
+
+print(tx_curr_trend)
+
+```
+
+
+
+## HTS and PMTCT_STAT yield
+
+```{r ,warning= FALSE, message=FALSE}
+
+print(gg_hts_yield)
+
+```
+
+
+
+
+## Linkage to Treatment
+
+```{r ,warning= FALSE, message=FALSE}
+
+print(gg_linkage)
+
+```
+
+

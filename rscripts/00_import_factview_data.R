@@ -11,7 +11,7 @@ library(scales)
 params <- list(country = c("Haiti"),
                source_date = c("20171115"),
                dataset = c("Site X IM"),
-               filename = c("ICPI_FactView_Site_IM_Haiti_20171115_v1_1"))
+               filename = c("ICPI_FactView_Site_IM_Malawi_20171115_v1_1"))
 
 ## IMPORT STE By IM Factview ----------------------------------------------------------
 
