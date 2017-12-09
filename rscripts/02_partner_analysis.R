@@ -99,7 +99,7 @@ partner_data_final[partner_data_final$implementingmechanismname ==
 #partner_data_final[partner_data_final$implementingmechanismname == 
 #                       "GHESKIO 1969",]$mechanism  <- "GHESKIO"
 
-#write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
+write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
 
 
 ## Patient Initiated not Linked by IM --------------------------------------------------------------------------

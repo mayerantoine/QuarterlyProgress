@@ -36,10 +36,13 @@ key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET","OVC_HIV
 
 ## OU Level Results --------------------------------------------------------------------
 
+# we do not use fy2017apr because we need the code the use for any quarter.
+
 # OU Level Results for non-cummalative 
 ou_level_non_cummulative <- site_im %>%
     #filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_indicators) %>%
+    filter(fundingagency == "HHS/CDC") %>%
     filter(disaggregate == "Total Numerator") %>%
     #filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>% 
@@ -59,6 +62,7 @@ ou_level_non_cummulative <- site_im %>%
 ou_level_cummulative <- site_im %>%
     filter(snu1 != "_Military Haiti") %>%
     filter(indicator %in% key_cummulative_indicator) %>%
+    filter(fundingagency == "HHS/CDC") %>%
     filter(disaggregate == "Total Numerator") %>%
    # filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
@@ -83,6 +87,7 @@ tx_curr <- site_im %>%
    # filter(snu1 != "_Military Haiti") %>%
     filter(indicator == "TX_CURR") %>%
     filter(disaggregate == "Total Numerator") %>%
+    filter(fundingagency == "HHS/CDC") %>%
    # filter(indicatortype == "DSD") %>% 
     filter(numeratordenom == "N") %>%
     select(indicator,fy2015apr,fy2016apr,fy2017q1,fy2017q2,fy2017q3,fy2017q4,fy2017_targets) %>%
@@ -356,3 +361,7 @@ ggsave(gg_linkage, filename =paste("gg_linkage",".png", sep=''), path = "Figs/",
 
 rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./rmds")
 rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "html_document",output_dir="./report")
+
+
+
+
