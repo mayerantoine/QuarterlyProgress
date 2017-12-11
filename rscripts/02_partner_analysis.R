@@ -99,7 +99,7 @@ partner_data_final[partner_data_final$implementingmechanismname ==
 #partner_data_final[partner_data_final$implementingmechanismname == 
 #                       "GHESKIO 1969",]$mechanism  <- "GHESKIO"
 
-write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
+#write_csv(partner_data_final,"./processed_data/partner_final_data.csv")
 
 
 ## Patient Initiated not Linked by IM --------------------------------------------------------------------------
@@ -657,10 +657,10 @@ tx_curr_facility[tx_curr_facility$mechanism ==
                        "HTW (Health Through Walls)",]$mechanism_name  <- "HTW"
 tx_curr_facility[tx_curr_facility$mechanism == 
                        "MSPP/UGP (National AIDS Strategic Plan)",]$mechanism_name  <- "MSPP/UGP"
-tx_curr_facility[tx_curr_facility$mechanism == 
-                     "GHESKIO 1924",]$mechanism_name  <- "GHESKIO"
-tx_curr_facility[tx_curr_facility$mechanism == 
-                     "GHESKIO 1969",]$mechanism_name  <- "GHESKIO"
+#tx_curr_facility[tx_curr_facility$mechanism == 
+#                     "GHESKIO 1924",]$mechanism_name  <- "GHESKIO"
+#tx_curr_facility[tx_curr_facility$mechanism == 
+ #                    "GHESKIO 1969",]$mechanism_name  <- "GHESKIO"
 
 tx_net_new_partner <- tx_curr_facility %>%
     group_by(mechanism_name) %>%
@@ -713,7 +713,17 @@ write_csv(tx_net_new_partner,"./processed_data/tx_net_new_partner_2.csv")
 ###############
 
 
-  
+ tx <- tx_curr_facility %>%
+    group_by(mechanism_name) %>%
+    summarise(fy2016apr = sum(fy2016apr,na.rm = T),
+              fy2017q1 = sum(fy2017q1, na.rm = T),
+              fy2017q2 = sum(fy2017q2, na.rm = T),
+              fy2017q3 = sum(fy2017q3,na.rm = T),
+              fy2017q4 = sum(fy2017q4,na.rm = T),
+              fy2017Cum = sum(fy2017Cum, na.rm = T),
+              fy2017_targets = sum(fy2017_targets,na.rm = T))
+ 
+ write_csv(tx,"tx_curr_reassign.csv")
 
     
     
