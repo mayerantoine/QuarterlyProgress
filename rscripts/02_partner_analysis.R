@@ -680,7 +680,7 @@ tx_net_new_partner <- tx_curr_facility %>%
     select(mechanism_name,tx_net_new_q1,tx_net_new_q2,tx_net_new_q3,tx_net_new_q4,tx_net_new_cum,tx_net_new_target) %>%
     as.data.frame()
 
-
+write_csv(tx_curr_facility,"./processed_data/tx_curr_facility.csv")
 
 # TX_NET_NEW Partner Performance
 tx_net_new_partner %>%

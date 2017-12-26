@@ -172,7 +172,7 @@ gg_cascade <- ou_level %>%
           plot.subtitle = element_text(size = 12),
           axis.ticks.y = element_blank())  
 
-ggsave(gg_cascade, filename =paste("CascadeFY17",".png", sep=''), path = "Figs/", scale=2)
+#ggsave(gg_cascade, filename =paste("CascadeFY17",".png", sep=''), path = "Figs/", scale=2)
 
 ## TX_NEW Trend --------------------------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ tx_new_trend <- site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))   
 
-ggsave(tx_new_trend, filename =paste("tx_new_trend",".png", sep=''), path = "Figs/", scale=2)
+#ggsave(tx_new_trend, filename =paste("tx_new_trend",".png", sep=''), path = "Figs/", scale=2)
 
 ## TX_CURR Trend -----------------------------------------------------------------------------------------
 
@@ -261,7 +261,7 @@ tx_curr_trend <- site_im %>%
           plot.subtitle  = element_text(size = 12))
 
 
-ggsave(tx_curr_trend, filename =paste("tx_curr_trend",".png", sep=''), path = "Figs/", scale=2)
+#ggsave(tx_curr_trend, filename =paste("tx_curr_trend",".png", sep=''), path = "Figs/", scale=2)
 
 ## HTS and PMTCT_STAT yield --------------------------------------------------------------------------
 
@@ -309,7 +309,7 @@ gg_hts_yield <- site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))
 
-ggsave(gg_hts_yield, filename =paste("gg_hts_yield",".png", sep=''), path = "Figs/", scale=2)
+#ggsave(gg_hts_yield, filename =paste("gg_hts_yield",".png", sep=''), path = "Figs/", scale=2)
 
 ## Linkage --------------------------------------------------------------------------------------------
 
@@ -348,7 +348,7 @@ gg_linkage <- site_im %>%
           plot.title = element_text(size = 18),
           plot.subtitle  = element_text(size = 12))
     
-ggsave(gg_linkage, filename =paste("gg_linkage",".png", sep=''), path = "Figs/", scale=2)
+#ggsave(gg_linkage, filename =paste("gg_linkage",".png", sep=''), path = "Figs/", scale=2)
 
 ## Tx_Net_New -----------------------------------------------------------------------------------------
 
@@ -359,8 +359,8 @@ ggsave(gg_linkage, filename =paste("gg_linkage",".png", sep=''), path = "Figs/",
 
 ## Render Markdown ------------------------------------------------------------------------------------
 
-rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./rmds")
-rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "html_document",output_dir="./report")
+rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "github_document",output_dir="./report")
+#rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "html_document",output_dir="./report")
 
 
 
