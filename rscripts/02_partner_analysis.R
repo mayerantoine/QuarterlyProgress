@@ -413,12 +413,12 @@ plot1  <- partner_performance %>%
            plot.subtitle  = element_text(size = 12),
            axis.ticks.y = element_blank())   
 
-dir.create(file.path("Figs/achievements"),showWarnings = FALSE)
-dir.create(file.path("Figs/results"),showWarnings = FALSE)
+dir.create(file.path("./Figs/achievements"),showWarnings = FALSE)
+dir.create(file.path("./Figs/results"),showWarnings = FALSE)
  
  # save plots as .png
- ggsave(plot1, filename =paste("performance",cascade_indicator[i], ".png", sep=''), path = "Figs/achievements/", scale=2)
- ggsave(plot2, filename =paste("results",cascade_indicator[i], ".png", sep=''), path = "Figs/results/", scale=2)
+ ggsave(plot1, filename =paste("performance",cascade_indicator[i], ".png", sep=''), path = "./Figs/achievements/", scale=2)
+ ggsave(plot2, filename =paste("results",cascade_indicator[i], ".png", sep=''), path = "./Figs/results/", scale=2)
  
  
  ## remove ticks
