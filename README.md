@@ -12,6 +12,9 @@ The main dataset use will be the PEPFAR results and targets in DATIM (frozen ins
 The initial analysis will be based on Haiti data and adapt to other countries.
 
 ## Ouput
-[Ou level report](http://htmlpreview.github.io/?https://github.com/mayerantoine/QuarterlyProgress/blob/master/report/ou_level_report.html)
+We create html output for different countries :
+* [Ou level report Haiti](http://htmlpreview.github.io/?https://github.com/mayerantoine/QuarterlyProgress/blob/master/report/Haiti/ou_level_report.html)
+* [Ou level report Malawi](http://htmlpreview.github.io/?https://github.com/mayerantoine/QuarterlyProgress/blob/master/report/Malawi/ou_level_report.html)
+* [Ou level report Tanzania](http://htmlpreview.github.io/?https://github.com/mayerantoine/QuarterlyProgress/blob/master/report/Tanzania/ou_level_report.html)
 -------------
 *Disclaimer: The findings, interpretation, and conclusions expressed herein are those of the authors and do not necessarily reflect the views of United States Agency for International Development, Centers for Disease Control and Prevention, Department of State, or the United States Government. All errors remain our own.*
