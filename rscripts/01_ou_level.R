@@ -15,12 +15,21 @@ library(scales)
 
 rm(list = ls())
 
-
+#? How to get the IMPPAT data ? is it complete ?
+# why use html, r markdown not excel tool ? (distribution and maintenace)
+# example of application :
+    # Developed data pipeline and standard report
+    # retro feed the facility on what is on DATIM using standard report 
+    # Site visit report
+    # Quarterly data review report
+    # 
+ 
+# can we run the code for past quarter
 # Import FactView File ----------------------------------------------------------
 
 source("./rscripts/00_import_factview_data.R")
 
-site_im <- import_factview_site_im("ICPI_FactView_Site_IM_Haiti_20171115_v1_1")
+site_im <- import_factview_site_im("ICPI_FactView_Site_IM_Malawi_20171115_v1_1")
 
 site_im$fy2015q4 <- as.numeric(site_im$fy2015q4)
 site_im$fy2015q2 <- as.numeric(site_im$fy2015q2)
@@ -45,7 +54,7 @@ key_indicators <- c("HTS_TST","HTS_TST_POS","TX_NEW","PMTCT_ART","PMTCT_EID","PM
 key_cummulative_indicator <- c("TX_CURR", "OVC_SERV","TX_PVLS","TX_RET","OVC_HIVSTAT")
 
 # OU Level Results dataset --------------------------------------------------------------------
-# we do not use fy2017apr because we need the code the use for any quarter.
+# we do not use fy2017apr because we need the code to be use for any quarter.
 
 get_ou_level_data <- function(site_im) {
     
@@ -126,7 +135,7 @@ ou_level <- get_ou_level_data(site_im = site_im)
 ## Render Markdown ------------------------------------------------------------------------------------
 
 # html output
-output_country_dir <- paste("./report/",country_name)
+output_country_dir <- paste0("./report/",country_name)
 dir.create(file.path(output_country_dir),showWarnings = FALSE)
 rmarkdown::render("./rmds/ou_level_report.Rmd",output_format = "html_document",output_dir = output_country_dir)
 

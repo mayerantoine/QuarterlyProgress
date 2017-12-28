@@ -18,9 +18,18 @@ library(xtable)
 
 ## `r country_name`
 
-### Overall Achievement (OU Level)
 
-This table shows orverall achievement for `r country_name` from FY15 to FY17
+### PEPFAR Context
+
+* Number of Facilities, ART and Testing
+* PLHIV
+* ART proportion of saturation and non-saturation district
+
+### Geographic distribution (Maps and Coverage)
+
+### Overall Achievement (against Target)
+
+This table shows overall achievement for `r country_name` from FY15 to FY17
 
 ```{r ou_level,warning= FALSE, message=FALSE}
 
@@ -237,13 +246,14 @@ knitr::kable(ou_level,"html") %>%
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 8),
-          plot.title = element_text(size = 18),
+          plot.title = element_text(size = 12),
           plot.subtitle  = element_text(size = 12))
 
 
 ```
 
 
+### Maps Coverage and HTS Yield
 
 
 #### Linkage to Treatment
@@ -280,7 +290,7 @@ knitr::kable(ou_level,"html") %>%
           panel.background = element_blank(),
           axis.line=element_line(),
           axis.title.x = element_text(size = 8),
-          plot.title = element_text(size = 18),
+          plot.title = element_text(size = 12),
           plot.subtitle  = element_text(size = 12))
 
 ```
