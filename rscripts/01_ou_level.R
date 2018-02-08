@@ -19,17 +19,16 @@ rm(list = ls())
 # why use html, r markdown not excel tool ? (distribution and maintenace)
 # example of application :
     # Developed data pipeline and standard report
-    # retro feed the facility on what is on DATIM using standard report 
+    # retro feed the facility on what is on DATIM using  a standard report 
     # Site visit report
     # Quarterly data review report
-    # 
- 
+    
 # can we run the code for past quarter
 # Import FactView File ----------------------------------------------------------
 
 source("./rscripts/00_import_factview_data.R")
 
-site_im <- import_factview_site_im("ICPI_FactView_Site_IM_Malawi_20171115_v1_1")
+site_im <- import_factview_site_im("ICPI_FactView_Site_IM_Haiti_20171115_v1_1")
 
 site_im$fy2015q4 <- as.numeric(site_im$fy2015q4)
 site_im$fy2015q2 <- as.numeric(site_im$fy2015q2)

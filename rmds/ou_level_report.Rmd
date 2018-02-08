@@ -1,6 +1,6 @@
 ---
 title: "Operating Unit Level (OU Level)"
-author: Mayer Atnoine
+author: Mayer Antoine
 date: "December 27,2017"
 output: html_document
 ---
@@ -151,8 +151,6 @@ knitr::kable(ou_level,"html") %>%
 
 
 ```
-
-
 
 #### TX_CURR Trend
 

@@ -259,7 +259,7 @@ write_csv(partner_performance_sp,"./processed_data/partner_performance_sp_2.csv"
 
 partner_performance %>%
     filter(fy2017Perf > 0) %>%
-    filter(mechanism == "GHESKIO 1969") %>%
+    #filter(mechanism == "GHESKIO 1969") %>%
     ggplot(mapping = aes(x=reorder(indicator,fy2017Perf),y=fy2017Perf))+
     geom_hline(yintercept = 0.85)+
     geom_bar(stat = "identity",fill= "#009999", width = 0.8)+
@@ -319,7 +319,7 @@ partner_performance %>%
           axis.ticks.y = element_blank())  
 
 partner_performance %>%
-    filter(indicator == "TX_NEW", fy2017Cum > 0) %>%
+    filter(indicator == "TX_CURR", fy2017Cum > 0) %>%
     ggplot(mapping = aes(x=reorder(mechanism,fy2017Cum),y=fy2017Cum))+
     geom_bar(stat = "identity",fill= "#1F78B4", width = 0.8)+
     geom_text(aes(label=paste0(comma(fy2017Cum))),size=4.5,
@@ -328,7 +328,7 @@ partner_performance %>%
     labs(y="", 
          x="",
          fill="",
-         title=paste0("APR17 TX_NEW"," "," Partner Results vs Targets"),
+         title=paste0("APR17 TX_CURR"," "," Partner Results vs Targets"),
          subtitle="Rank from highest to lowest results",
          caption="Data source:ICPI FactView SitexIM Haiti")+
     coord_flip()+
